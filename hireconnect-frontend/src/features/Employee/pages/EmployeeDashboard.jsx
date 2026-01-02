@@ -1,0 +1,1324 @@
+
+// import React, { useEffect, useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import {
+//   User,
+//   Calendar,
+//   Clock,
+//   FileText,
+//   ArrowRightCircle,
+//   Activity,
+//   Briefcase,
+//   Star,
+//   PlaneTakeoff,
+//   Coffee,
+//   CheckCircle,
+//   HeartPulse,
+// } from "lucide-react";
+
+// const API_BASE_URL =
+//   (typeof import.meta !== "undefined" &&
+//     import.meta.env &&
+//     import.meta.env.VITE_API_BASE_URL) ||
+//   "http://localhost:8080";
+
+// export default function EmployeeDashboard() {
+//   const navigate = useNavigate();
+
+//   const [employeeName, setEmployeeName] = useState("");
+//   const [nameLoading, setNameLoading] = useState(true);
+//   const [nameError, setNameError] = useState("");
+
+//   const handleProfileClick = () => navigate("/employee/profile");
+//   const handleLeaveClick = () => navigate("/employee/leave");
+//   const handlePayslipsClick = () => navigate("/employee/payslips");
+//   const handleAttendanceClick = () => navigate("/employee/attendance");
+
+// useEffect(() => {
+//   const fetchEmployeeName = async () => {
+//     try {
+//       const token = localStorage.getItem("token");
+//       const userId = localStorage.getItem("userId");
+
+//       if (!token || !userId) {
+//         setEmployeeName("Employee");
+//         setNameLoading(false);
+//         return;
+//       }
+
+//       const res = await fetch(
+//         `${API_BASE_URL}/api/dashboard/employee/${userId}`,
+//         {
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//             "Content-Type": "application/json",
+//           },
+//         }
+//       );
+
+//       if (!res.ok) {
+//         throw new Error(`Failed to fetch employee dashboard: ${res.status}`);
+//       }
+
+//       const apiResponse = await res.json();
+//       console.log("Employee dashboard API response 👉", apiResponse);
+
+//       // ApiResponse<Map<String, Object>> → actual data is inside `data`
+//       const dashboardData = apiResponse.data || {};
+
+//       const nameFromApi =
+//         dashboardData.employeeName ||
+//         dashboardData.fullName ||
+//         (dashboardData.firstName &&
+//           dashboardData.lastName &&
+//           `${dashboardData.firstName} ${dashboardData.lastName}`) ||
+//         dashboardData.firstName ||
+//         dashboardData.name ||
+//         dashboardData.username ||
+//         "Employee";
+
+//       setEmployeeName(nameFromApi);
+//       setNameError("");
+//     } catch (err) {
+//       console.error("Error fetching employee name:", err);
+//       setEmployeeName("Employee");
+//       //setNameError("Could not load name");
+//     } finally {
+//       setNameLoading(false);
+//     }
+//   };
+
+//   fetchEmployeeName();
+// }, []);
+
+//   const displayName = nameLoading ? "..." : employeeName || "Employee";
+
+//   return (
+//     <div className="min-h-screen px-4 md:px-6 py-4">
+//       {/* HEADER */}
+//       <div
+//         className="rounded-2xl px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6 shadow-sm"
+//         style={{ backgroundColor: "#00008B" }}
+//       >
+//         <div>
+//           <h1 className="text-xl md:text-2xl font-bold text-white">
+//             Employee Dashboard
+//           </h1>
+//           <p className="text-xs md:text-sm text-blue-100 mt-1 max-w-xl">
+//             Get a quick overview of your workday, attendance, and HR updates
+//             from a single place.
+//           </p>
+//         </div>
+
+//         <div className="flex gap-4 text-xs md:text-sm text-blue-100">
+//           <div className="flex flex-col items-end">
+//             {nameError && (
+//               <span className="text-[10px] text-red-200">{nameError}</span>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+
+//       <main className="max-w-7xl mx-auto px-4 lg:px-6 py-6 md:py-8 space-y-6 md:space-y-8">
+//         {/* Greeting + Quick summary */}
+//         <section className="grid grid-cols-1 lg:grid-cols-[2fr,1.2fr] gap-6">
+//           {/* Greeting Card */}
+//           <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm">
+//             <div className="absolute -top-16 -right-10 h-40 w-40 rounded-full bg-[#E3EBFF]" />
+//             <div className="relative p-5 md:p-7 flex flex-col md:flex-row md:items-center justify-between gap-6">
+//               <div className="space-y-3">
+//                 <p className="text-[11px] uppercase tracking-[0.18em] text-[#2952CC]">
+//                   Welcome back
+//                 </p>
+//                 <h2 className="text-2xl md:text-3xl font-semibold text-[#0B2A6F]">
+//                   Hi, {displayName} 👋
+//                 </h2>
+//                 <p className="text-sm md:text-base text-gray-600 max-w-xl">
+//                   Here’s a quick view of your workday. Check attendance, manage
+//                   leaves, download payslips and stay updated with HR in one
+//                   place.
+//                 </p>
+
+//                 <div className="flex flex-wrap gap-2 pt-1">
+//                   <span className="inline-flex items-center gap-2 rounded-full bg-[#E3F5FF] text-[#05518C] border border-[#B8E1FF] px-3 py-1 text-[11px] font-medium">
+//                     <Clock className="h-3 w-3" />
+//                     Today&apos;s status: Present
+//                   </span>
+//                   <span className="inline-flex items-center gap-2 rounded-full bg-[#EAF9F1] text-[#19724A] border border-[#B8EBD1] px-3 py-1 text-[11px] font-medium">
+//                     <Star className="h-3 w-3" />
+//                     Performance: On track
+//                   </span>
+//                 </div>
+//               </div>
+
+//               <div className="grid grid-cols-2 gap-4 min-w-[220px] text-xs md:text-sm">
+//                 <div className="rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3">
+//                   <p className="text-gray-500 text-[11px]">
+//                     This month attendance
+//                   </p>
+//                   <p className="mt-1 text-xl font-semibold text-[#0B2A6F]">
+//                     96%
+//                   </p>
+//                   <p className="mt-1 text-[11px] text-[#1B7C4D] flex items-center gap-1">
+//                     <Activity className="h-3 w-3" />
+//                     Great consistency
+//                   </p>
+//                 </div>
+//                 <div className="rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3">
+//                   <p className="text-gray-500 text-[11px]">Available leave</p>
+//                   <p className="mt-1 text-xl font-semibold text-[#0B2A6F]">
+//                     11
+//                   </p>
+//                   <p className="mt-1 text-[11px] text-[#1B5FBF] flex items-center gap-1">
+//                     <PlaneTakeoff className="h-3 w-3" />
+//                     Plan your vacation
+//                   </p>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Quick actions */}
+//           <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5 flex flex-col justify-between">
+//             <div className="flex items-center justify-between mb-3">
+//               <div>
+//                 <h3 className="text-sm font-semibold text-[#0B2A6F]">
+//                   Quick Actions
+//                 </h3>
+//                 <p className="text-xs text-gray-500">
+//                   One-click access to your most used features.
+//                 </p>
+//               </div>
+//               <span className="rounded-full bg-[#E3EBFF] text-[#0B2A6F] text-[11px] px-3 py-1 font-medium">
+//                 Employee Panel
+//               </span>
+//             </div>
+
+//             <div className="grid grid-cols-2 gap-3 text-xs md:text-sm">
+//               <button
+//                 onClick={handleLeaveClick}
+//                 className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] transition"
+//               >
+//                 <div className="flex items-center gap-2">
+//                   <Calendar className="h-4 w-4 text-[#2952CC]" />
+//                   <span className="font-medium text-[#0B2A6F]">
+//                     Request Leave
+//                   </span>
+//                 </div>
+//                 <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
+//                   Apply for leave and track status.
+//                 </p>
+//               </button>
+
+//               <button
+//                 onClick={handlePayslipsClick}
+//                 className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] transition"
+//               >
+//                 <div className="flex items-center gap-2">
+//                   <FileText className="h-4 w-4 text-[#2952CC]" />
+//                   <span className="font-medium text-[#0B2A6F]">
+//                     View Payslips
+//                   </span>
+//                 </div>
+//                 <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
+//                   Download monthly salary slips.
+//                 </p>
+//               </button>
+
+//               <button
+//                 onClick={handleAttendanceClick}
+//                 className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] transition"
+//               >
+//                 <div className="flex items-center gap-2">
+//                   <Clock className="h-4 w-4 text-[#2952CC]" />
+//                   <span className="font-medium text-[#0B2A6F]">
+//                     Attendance
+//                   </span>
+//                 </div>
+//                 <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
+//                   Check in/out history & hours.
+//                 </p>
+//               </button>
+
+//               <button
+//                 onClick={handleProfileClick}
+//                 className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] transition"
+//               >
+//                 <div className="flex items-center gap-2">
+//                   <User className="h-4 w-4 text-[#2952CC]" />
+//                   <span className="font-medium text-[#0B2A6F]">
+//                     My Profile
+//                   </span>
+//                 </div>
+//                 <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
+//                   Update personal & work details.
+//                 </p>
+//               </button>
+//             </div>
+//           </div>
+//         </section>
+
+//         {/* Middle section: Stats + Timeline */}
+//         <section className="grid grid-cols-1 xl:grid-cols-[1.7fr,1.3fr] gap-6">
+//           {/* Stats cards + Activity */}
+//           <div className="space-y-4">
+//             <div className="flex items-center justify-between">
+//               <h3 className="text-sm font-semibold text-[#0B2A6F]">
+//                 Work & HR Snapshot
+//               </h3>
+//               <button className="flex items-center gap-1 text-[11px] text-[#2952CC] hover:text-[#1F3DA3]">
+//                 View detailed reports
+//                 <ArrowRightCircle className="h-3 w-3" />
+//               </button>
+//             </div>
+
+//             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+//               <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
+//                 <div className="flex items-center justify-between">
+//                   <span className="text-[11px] text-gray-500">
+//                     Current project
+//                   </span>
+//                   <Briefcase className="h-4 w-4 text-[#2952CC]" />
+//                 </div>
+//                 <p className="text-sm font-semibold text-[#0B2A6F]">
+//                   HRMS Portal - Employee Module
+//                 </p>
+//                 <p className="text-[11px] text-gray-500">
+//                   Status:{" "}
+//                   <span className="text-[#1B7C4D] font-medium">Active</span>
+//                 </p>
+//                 <div className="mt-2 h-1.5 w-full rounded-full bg-[#E5EDFF] overflow-hidden">
+//                   <div className="h-full w-3/4 bg-gradient-to-r from-[#2952CC] to-[#2DAF7D]" />
+//                 </div>
+//                 <p className="text-[11px] text-gray-500">75% completed</p>
+//               </div>
+
+//               <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
+//                 <div className="flex items-center justify-between">
+//                   <span className="text-[11px] text-gray-500">This month</span>
+//                   <Coffee className="h-4 w-4 text-[#2952CC]" />
+//                 </div>
+//                 <p className="text-sm font-semibold text-[#0B2A6F]">
+//                   Logged Hours
+//                 </p>
+//                 <p className="text-2xl font-semibold text-[#0B2A6F]">142</p>
+//                 <p className="text-[11px] text-[#1B7C4D]">
+//                   +6 hrs above target
+//                 </p>
+//                 <p className="text-[11px] text-gray-500">
+//                   Avg per day: 7.1 hrs
+//                 </p>
+//               </div>
+
+//               <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
+//                 <div className="flex items-center justify-between">
+//                   <span className="text-[11px] text-gray-500">HR Updates</span>
+//                   <CheckCircle className="h-4 w-4 text-[#2952CC]" />
+//                 </div>
+//                 <p className="text-sm font-semibold text-[#0B2A6F]">
+//                   Pending Items
+//                 </p>
+//                 <ul className="mt-1 space-y-1 text-[11px] text-gray-700">
+//                   <li>• 1 document verification</li>
+//                   <li>• 1 feedback form</li>
+//                   <li>• 1 training acknowledgment</li>
+//                 </ul>
+//                 <button className="mt-2 text-[11px] text-[#2952CC] hover:text-[#1F3DA3]">
+//                   View & complete now
+//                 </button>
+//               </div>
+//             </div>
+
+//             {/* Activity timeline */}
+//             <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
+//               <div className="flex items-center justify-between mb-3">
+//                 <div>
+//                   <h3 className="text-sm font-semibold text-[#0B2A6F]">
+//                     Today&apos;s Activity
+//                   </h3>
+//                   <p className="text-xs text-gray-500">
+//                     Key updates from attendance, leaves and HR.
+//                   </p>
+//                 </div>
+//               </div>
+
+//               <div className="space-y-4 text-xs md:text-sm">
+//                 {[
+//                   {
+//                     time: "09:15 AM",
+//                     title: "Login marked (Web)",
+//                     desc: "You have successfully logged in from desktop.",
+//                     colorClasses:
+//                       "bg-[#EAF9F1] text-[#19724A] border-[#B8EBD1]",
+//                   },
+//                   {
+//                     time: "11:30 AM",
+//                     title: "Standup completed",
+//                     desc: "Daily standup update submitted for HRMS Portal.",
+//                     colorClasses:
+//                       "bg-[#E3EBFF] text-[#2952CC] border-[#C2D1FF]",
+//                   },
+//                   {
+//                     time: "03:10 PM",
+//                     title: "Training reminder",
+//                     desc: "Mandatory compliance training scheduled tomorrow.",
+//                     colorClasses:
+//                       "bg-[#FFF5E6] text-[#C96A13] border-[#FFE0B8]",
+//                   },
+//                   {
+//                     time: "05:45 PM",
+//                     title: "Logout pending",
+//                     desc: "Don&apos;t forget to mark your logout before EOD.",
+//                     colorClasses:
+//                       "bg-[#FFECEF] text-[#C2273D] border-[#FFC1CD]",
+//                   },
+//                 ].map((item, idx) => (
+//                   <div
+//                     key={idx}
+//                     className="flex gap-3 md:gap-4 items-start relative"
+//                   >
+//                     <div
+//                       className={`mt-0.5 inline-flex items-center justify-center rounded-full border px-2 py-1 text-[10px] md:text-[11px] ${item.colorClasses}`}
+//                     >
+//                       <Clock className="h-3 w-3 mr-1" />
+//                       <span className="hidden sm:inline">{item.time}</span>
+//                     </div>
+//                     <div className="flex-1">
+//                       <p className="font-medium text-xs md:text-sm text-[#0B2A6F]">
+//                         {item.title}
+//                       </p>
+//                       <p className="text-[11px] md:text-xs text-gray-500">
+//                         {item.desc}
+//                       </p>
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Right side: Upcoming & Wellness */}
+//           <div className="space-y-4">
+//             {/* Upcoming events */}
+//             <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
+//               <div className="flex items-center justify-between mb-3">
+//                 <div>
+//                   <h3 className="text-sm font-semibold text-[#0B2A6F]">
+//                     Upcoming
+//                   </h3>
+//                   <p className="text-xs text-gray-500">
+//                     Leaves, holidays & important dates.
+//                   </p>
+//                 </div>
+//                 <span className="text-[11px] text-gray-500">
+//                   Next 30 days
+//                 </span>
+//               </div>
+
+//               <div className="space-y-3 text-xs md:text-sm">
+//                 <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-[#F9FBFF] p-3">
+//                   <div className="rounded-lg bg-[#E3EBFF] text-[#0B2A6F] h-10 w-10 flex flex-col items-center justify-center text-[11px] font-semibold">
+//                     <span>02</span>
+//                     <span className="text-[9px] uppercase">Dec</span>
+//                   </div>
+//                   <div className="flex-1">
+//                     <p className="font-medium text-[#0B2A6F]">
+//                       Planned Casual Leave
+//                     </p>
+//                     <p className="text-[11px] text-gray-500">
+//                       CL applied for personal work. Awaiting manager approval.
+//                     </p>
+//                   </div>
+//                   <span className="text-[11px] text-[#C96A13] font-medium">
+//                     Pending
+//                   </span>
+//                 </div>
+
+//                 <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-[#F9FBFF] p-3">
+//                   <div className="rounded-lg bg-[#EAF9F1] text-[#19724A] h-10 w-10 flex flex-col items-center justify-center text-[11px] font-semibold">
+//                     <span>08</span>
+//                     <span className="text-[9px] uppercase">Dec</span>
+//                   </div>
+//                   <div className="flex-1">
+//                     <p className="font-medium text-[#0B2A6F]">
+//                       Company Townhall
+//                     </p>
+//                     <p className="text-[11px] text-gray-500">
+//                       Quarterly business update and Q&amp;A with leadership.
+//                     </p>
+//                   </div>
+//                   <span className="text-[11px] text-[#19724A] font-medium">
+//                     Confirmed
+//                   </span>
+//                 </div>
+
+//                 <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-[#F9FBFF] p-3">
+//                   <div className="rounded-lg bg-[#F4ECFF] text-[#6A3BB7] h-10 w-10 flex flex-col items-center justify-center text-[11px] font-semibold">
+//                     <span>25</span>
+//                     <span className="text-[9px] uppercase">Dec</span>
+//                   </div>
+//                   <div className="flex-1">
+//                     <p className="font-medium text-[#0B2A6F]">Holiday</p>
+//                     <p className="text-[11px] text-gray-500">
+//                       Christmas Day company-wide holiday.
+//                     </p>
+//                   </div>
+//                   <span className="text-[11px] text-gray-600 font-medium">
+//                     Holiday
+//                   </span>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* HR highlights / Wellness */}
+//             <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
+//               <div className="flex items-center justify-between mb-3">
+//                 <div>
+//                   <h3 className="text-sm font-semibold text-[#0B2A6F]">
+//                     People & Wellness
+//                   </h3>
+//                   <p className="text-xs text-gray-500">
+//                     Stay balanced with HR&apos;s latest initiatives.
+//                   </p>
+//                 </div>
+//               </div>
+
+//               <div className="space-y-3 text-xs md:text-sm">
+//                 <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-[#F9FBFF] p-3">
+//                   <div className="h-9 w-9 rounded-xl bg-[#E3EBFF] flex items-center justify-center">
+//                     <HeartPulse className="h-4 w-4 text-[#2952CC]" />
+//                   </div>
+//                   <div>
+//                     <p className="font-medium text-[#0B2A6F]">
+//                       Wellness Wednesday
+//                     </p>
+//                     <p className="text-[11px] text-gray-500">
+//                       Join a 20-minute guided meditation session this week.
+//                     </p>
+//                   </div>
+//                 </div>
+
+//                 <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-[#F9FBFF] p-3">
+//                   <div className="h-9 w-9 rounded-xl bg-[#EAF9F1] flex items-center justify-center">
+//                     <Star className="h-4 w-4 text-[#19724A]" />
+//                   </div>
+//                   <div>
+//                     <p className="font-medium text-[#0B2A6F]">
+//                       Kudos from Manager
+//                     </p>
+//                     <p className="text-[11px] text-gray-500">
+//                       &quot;Great ownership on HRMS Employee Module delivery.&quot;
+//                     </p>
+//                   </div>
+//                 </div>
+
+//                 <div className="flex items-center justify-between pt-1">
+//                   <p className="text-[11px] text-gray-500">
+//                     Want to update your personal details or bank info?
+//                   </p>
+//                   <button
+//                     onClick={handleProfileClick}
+//                     className="text-[11px] text-[#2952CC] hover:text-[#1F3DA3] flex items-center gap-1"
+//                   >
+//                     Go to profile
+//                     <ArrowRightCircle className="h-3 w-3" />
+//                   </button>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </section>
+//       </main>
+//     </div>
+//   );
+// }
+
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  User,
+  Calendar,
+  Clock,
+  FileText,
+  ArrowRightCircle,
+  Activity,
+  Briefcase,
+  CheckCircle,
+  HeartPulse,
+} from "lucide-react";
+
+const API_BASE_URL =
+  (typeof import.meta !== "undefined" &&
+    import.meta.env &&
+    import.meta.env.VITE_API_BASE_URL) ||
+  "http://localhost:8080";
+
+const cleanBase = API_BASE_URL.replace(/\/+$/, "");
+
+export default function EmployeeDashboard() {
+  const navigate = useNavigate();
+
+  // ---------------- ROUTE HANDLERS ----------------
+  const handleProfileClick = () => navigate("/employee/dashboard");
+  const handleLeaveClick = () => navigate("/employee/leaves");
+  const handlePayslipsClick = () => navigate("/employee/finance");
+  const handleAttendanceClick = () => navigate("/employee/attendance");
+
+  // ---------------- STATE ----------------
+  const [employeeName, setEmployeeName] = useState("");
+  const [employeePhotoUrl, setEmployeePhotoUrl] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  const [headerStats, setHeaderStats] = useState({
+    todayStatus: null,
+    performanceStatus: null,
+    thisMonthAttendancePercent: null,
+    availableLeave: 24,
+    takenLeave: 0,
+  });
+
+  const [snapshot, setSnapshot] = useState({
+    currentProject: null,
+    currentProjectStatus: null,
+    projectProgressPercent: null,
+    loggedHours: null,
+    hoursAboveTarget: null,
+    avgHoursPerDay: null,
+    pendingItems: [],
+  });
+
+  const [todaysActivity, setTodaysActivity] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [wellnessHighlights, setWellnessHighlights] = useState([]);
+  const [myLeaves, setMyLeaves] = useState([]);
+
+  // ---------------- HELPERS ----------------
+  const safeUrl = (path) => {
+    const cleanPath = path.replace(/^\/+/, "");
+    return cleanBase ? `${cleanBase}/${cleanPath}` : `/${cleanPath}`;
+  };
+
+  const formatShortDate = (value) => {
+    if (!value) return "--";
+    try {
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return value;
+      return d.toLocaleDateString(undefined, {
+        day: "2-digit",
+        month: "short",
+      });
+    } catch {
+      return value;
+    }
+  };
+
+  const formatTime = (value) => {
+    if (!value) return "--";
+    try {
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return value;
+      return d.toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return value;
+    }
+  };
+
+  const getActivityPillClasses = (item) => {
+    const severity = (item.severity || item.type || "").toUpperCase();
+    switch (severity) {
+      case "SUCCESS":
+      case "ATTENDANCE":
+        return "bg-[#EAF9F1] text-[#19724A] border-[#B8EBD1]";
+      case "INFO":
+      case "UPDATE":
+        return "bg-[#E3EBFF] text-[#2952CC] border-[#C2D1FF]";
+      case "REMINDER":
+        return "bg-[#FFF5E6] text-[#C96A13] border-[#FFE0B8]";
+      case "ALERT":
+      case "DANGER":
+        return "bg-[#FFECEF] text-[#C2273D] border-[#FFC1CD]";
+      default:
+        return "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]";
+    }
+  };
+
+  const getEventBadgeClasses = (event) => {
+    const status = (event.status || "").toUpperCase();
+    if (status.includes("APPROVED")) return "text-[#19724A]";
+    if (status.includes("PENDING") || status.includes("REQUESTED"))
+      return "text-[#C96A13]";
+    if (status.includes("REJECTED")) return "text-[#C2273D]";
+    return "text-[#19724A]";
+  };
+
+  const getStatusBadgeClasses = (status) => {
+    const s = (status || "").toUpperCase();
+    if (s.includes("APPROVED"))
+      return "bg-[#EAF9F1] text-[#19724A] border-[#B8EBD1]";
+    if (s.includes("PENDING"))
+      return "bg-[#FFF5E6] text-[#C96A13] border-[#FFE0B8]";
+    if (s.includes("REJECTED"))
+      return "bg-[#FFECEF] text-[#C2273D] border-[#FFC1CD]";
+    return "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]";
+  };
+
+  const getCurrentMonthYear = () => {
+    const now = new Date();
+    const month = (now.getMonth() + 1).toString().padStart(2, "0");
+    const year = now.getFullYear().toString();
+    return { month, year };
+  };
+
+  const calculateAvailableLeaves = (leaves) => {
+    const takenLeaves = leaves.filter((leave) =>
+      ["APPROVED"].includes((leave.status || "").toUpperCase())
+    ).length;
+    return Math.max(0, 24 - takenLeaves);
+  };
+
+  // ---------------- FETCH ALL DATA ----------------
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        const userId = localStorage.getItem("userId");
+
+        if (!userId) {
+          setEmployeeName("Employee");
+          setLoadError("User ID not found in session.");
+          setLoading(false);
+          return;
+        }
+
+        const commonHeaders = {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+
+        // 1. Fetch USER data
+        try {
+          const userEndpoint = safeUrl(`/api/users/${userId}`);
+          const userRes = await fetch(userEndpoint, { headers: commonHeaders });
+
+          if (userRes.ok) {
+            const userJson = await userRes.json();
+            const userData = userJson.data || {};
+            const name =
+              userData.fullName ||
+              userData.name ||
+              userData.firstName ||
+              "Employee";
+            setEmployeeName(name);
+            localStorage.setItem("employeeName", name);
+
+            const photo =
+              userData.profilePhotoUrl ||
+              userData.photoUrl ||
+              userData.avatarUrl ||
+              "";
+            if (photo) setEmployeePhotoUrl(photo);
+          }
+        } catch (err) {
+          console.warn("User fetch failed:", err);
+        }
+
+        // 1.5. Fetch PASSPORT PHOTO from documents endpoint
+        try {
+          const passportEndpoint = safeUrl(`/api/documents/my-passport-photo`);
+          const passportRes = await fetch(passportEndpoint, {
+            headers: commonHeaders,
+          });
+
+          if (passportRes.ok) {
+            const passportJson = await passportRes.json();
+            const passportPhotoUrl = passportJson.data;
+            if (passportPhotoUrl && passportPhotoUrl !== employeePhotoUrl) {
+              setEmployeePhotoUrl(passportPhotoUrl);
+            }
+          }
+        } catch (err) {
+          console.warn("Passport photo fetch failed:", err);
+        }
+
+        // 2. Fetch MY LEAVES
+        try {
+          const leavesEndpoint = safeUrl(`/api/leaves/my-leaves`);
+          const leavesRes = await fetch(leavesEndpoint, {
+            headers: commonHeaders,
+          });
+
+          if (leavesRes.ok) {
+            const leavesJson = await leavesRes.json();
+            const leaves = leavesJson.data || [];
+            setMyLeaves(leaves);
+
+            const available = calculateAvailableLeaves(leaves);
+            const taken = leaves.filter((leave) =>
+              ["APPROVED"].includes((leave.status || "").toUpperCase())
+            ).length;
+
+            setHeaderStats((prev) => ({
+              ...prev,
+              availableLeave: available,
+              takenLeave: taken,
+            }));
+          }
+        } catch (err) {
+          console.warn("Leaves fetch failed:", err);
+          setHeaderStats((prev) => ({ ...prev, availableLeave: 24 }));
+        }
+
+        // 3. Fetch DASHBOARD data
+        try {
+          const dashboardEndpoint = safeUrl(
+            `/api/dashboard/employee/${userId}`
+          );
+          const dashRes = await fetch(dashboardEndpoint, {
+            headers: commonHeaders,
+          });
+
+          if (dashRes.ok) {
+            const dashJson = await dashRes.json();
+            const dashboardData = dashJson.data || {};
+
+            setHeaderStats((prev) => ({
+              ...prev,
+              todayStatus:
+                dashboardData.todayStatus ||
+                dashboardData.todayAttendance ||
+                "No data",
+              performanceStatus:
+                dashboardData.performance ||
+                dashboardData.performanceStatus ||
+                "Good",
+            }));
+
+            setSnapshot({
+              currentProject: dashboardData.currentProject || "No project",
+              currentProjectStatus: dashboardData.projectStatus || "Active",
+              projectProgressPercent: dashboardData.projectProgress || 0,
+              loggedHours: dashboardData.loggedHours || 0,
+              hoursAboveTarget: dashboardData.hoursAboveTarget || 0,
+              avgHoursPerDay: dashboardData.avgHoursPerDay || 0,
+              pendingItems: dashboardData.pendingItems || [],
+            });
+
+            setTodaysActivity(dashboardData.todaysActivity || []);
+            setUpcomingEvents(dashboardData.upcomingEvents || []);
+            setWellnessHighlights(dashboardData.wellnessHighlights || []);
+          }
+        } catch (err) {
+          console.warn("Dashboard fetch failed:", err);
+        }
+
+        // 4. Fetch MONTHLY ATTENDANCE
+        try {
+          const { month, year } = getCurrentMonthYear();
+          const monthlyEndpoint = safeUrl(
+            `/api/attendance/monthly?employeeId=${userId}&year=${year}&month=${month}`
+          );
+          const monthlyRes = await fetch(monthlyEndpoint, {
+            headers: commonHeaders,
+          });
+
+          if (monthlyRes.ok) {
+            const monthlyJson = await monthlyRes.json();
+            const monthlyData = monthlyJson.data || {};
+
+            const presentDays = Number(monthlyData.presentDays || 0);
+            const totalDays = Number(monthlyData.totalDays || 0);
+
+            let attendancePercent = null;
+            if (totalDays > 0) {
+              attendancePercent =
+                Math.round((presentDays / totalDays) * 1000) / 10;
+            }
+
+            setHeaderStats((prev) => ({
+              ...prev,
+              thisMonthAttendancePercent: attendancePercent,
+            }));
+          }
+        } catch (err) {
+          console.warn("Monthly attendance fetch failed:", err);
+        }
+
+        // 5. Fetch TODAY'S ATTENDANCE
+        try {
+          const todayEndpoint = safeUrl(`/api/attendance/today/${userId}`);
+          const todayRes = await fetch(todayEndpoint, {
+            headers: commonHeaders,
+          });
+
+          if (todayRes.ok) {
+            const todayJson = await todayRes.json();
+            const todayData = todayJson.data || {};
+            setHeaderStats((prev) => ({
+              ...prev,
+              todayStatus:
+                todayData.status ||
+                todayData.attendanceStatus ||
+                prev.todayStatus,
+            }));
+          }
+        } catch (err) {
+          console.warn("Today attendance fetch failed:", err);
+        }
+
+        setLoadError("");
+      } catch (err) {
+        console.error("Dashboard load error:", err);
+        setLoadError("Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const displayName = loading ? "..." : employeeName || "Employee";
+  const attendancePercent = headerStats.thisMonthAttendancePercent;
+  const availableLeave = headerStats.availableLeave;
+  const takenLeave = headerStats.takenLeave;
+  const { month, year } = getCurrentMonthYear();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F9FAFF] flex items-center justify-center">
+        <div className="text-lg text-gray-600">Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen px-4 md:px-6 py-4 bg-[#F9FAFF]">
+      {/* BLUE HEADER STRIP */}
+      <div
+        className="rounded-2xl px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6 shadow-sm"
+        style={{ backgroundColor: "#00008B" }}
+      >
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-white">
+            Employee Dashboard
+          </h1>
+          <p className="text-xs md:text-sm text-blue-100 mt-1 max-w-xl">
+            24 leaves allocated per year.{" "}
+            {takenLeave > 0 && `${takenLeave} taken, `}{availableLeave} remaining.
+          </p>
+        </div>
+
+        <div className="flex flex-col items-end text-xs md:text-sm text-blue-100">
+          {loadError && (
+            <span className="text-[10px] text-red-200 text-right">
+              {loadError}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <main className="max-w-7xl mx-auto px-0 lg:px-1 py-2 md:py-4 space-y-6 md:space-y-8">
+        {/* GREETING + QUICK ACTIONS */}
+        <section className="grid grid-cols-1 lg:grid-cols-[2fr,1.2fr] gap-6">
+          {/* GREETING CARD */}
+          <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm">
+            <div className="absolute -top-16 -right-10 h-40 w-40 rounded-full bg-[#E3EBFF]" />
+            <div className="relative p-5 md:p-7 flex flex-col justify-between gap-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 md:h-20 md:w-20 rounded-full border-2 border-[#C2D1FF] bg-[#E3EBFF] overflow-hidden flex items-center justify-center">
+                    {employeePhotoUrl ? (
+                      <img
+                        src={employeePhotoUrl}
+                        alt={displayName}
+                        className="h-full w-full object-cover rounded-full"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    {!employeePhotoUrl && (
+                      <User className="h-8 w-8 md:h-10 md:w-10 text-[#2952CC] flex-shrink-0" />
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[#2952CC]">
+                      Welcome back
+                    </p>
+                    <h2 className="text-2xl md:text-3xl font-semibold text-[#0B2A6F]">
+                      Hi, {displayName} 👋
+                    </h2>
+                    <p className="text-sm md:text-base text-gray-600 max-w-xl">
+                      {availableLeave > 0
+                        ? `You have ${availableLeave} leaves remaining this year (24 total).`
+                        : "No leaves remaining this year."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Mini stats */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-[220px] text-xs md:text-sm">
+                  <div className="rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3">
+                    <p className="text-gray-500 text-[11px]">
+                      {month}/{year} Attendance
+                    </p>
+                    <p className="mt-1 text-xl font-semibold text-[#0B2A6F]">
+                      {attendancePercent != null ? `${attendancePercent}%` : "--"}
+                    </p>
+                    <p className="mt-1 text-[11px] text-[#1B7C4D] flex items-center gap-1">
+                      {attendancePercent != null ? (
+                        <>
+                          <Activity className="h-3 w-3" />
+                          Monthly average
+                        </>
+                      ) : (
+                        "No data"
+                      )}
+                    </p>
+                  </div>
+
+                  <div
+                    className={`rounded-xl border-2 px-3 py-3 ${
+                      availableLeave > 10
+                        ? "bg-[#EAF9F1] border-[#B8EBD1]"
+                        : availableLeave > 0
+                        ? "bg-[#FFF5E6] border-[#FFE0B8]"
+                        : "bg-[#FFECEF] border-[#FFC1CD]"
+                    }`}
+                  >
+                    <p className="text-gray-700 font-medium text-[11px]">
+                      Available Leave
+                    </p>
+                    <p className="mt-1 text-2xl font-bold text-[#0B2A6F]">
+                      {availableLeave || 0}
+                    </p>
+                    <p className="mt-1 text-[10px] text-gray-600 flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {takenLeave > 0 && `${takenLeave} taken`} 24 total
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status chips */}
+              <div className="flex flex-wrap gap-2 pt-1">
+                <span className="inline-flex items-center gap-2 rounded-full bg-[#E3F5FF] text-[#05518C] border border-[#B8E1FF] px-3 py-1 text-[11px] font-medium">
+                  <Clock className="h-3 w-3" />
+                  Today: {headerStats.todayStatus || "No data"}
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-[#EAF9F1] text-[#19724A] border border-[#B8EBD1] px-3 py-1 text-[11px] font-medium">
+                  <CheckCircle className="h-3 w-3" />
+                  Performance: {headerStats.performanceStatus || "Good"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* QUICK ACTIONS */}
+          <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="text-sm font-semibold text-[#0B2A6F]">
+                  Quick Actions
+                </h3>
+                <p className="text-xs text-gray-500">
+                  {availableLeave > 0
+                    ? `Apply for leave (${availableLeave} available)`
+                    : "No leaves remaining"}
+                </p>
+              </div>
+              <span className="rounded-full bg-[#E3EBFF] text-[#0B2A6F] text-[11px] px-3 py-1 font-medium">
+                Employee Panel
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs md:text-sm">
+              <button
+                onClick={handleLeaveClick}
+                disabled={availableLeave === 0}
+                className={`group rounded-xl border px-3 py-3 flex flex-col items-start gap-2 transition-all duration-200 ${
+                  availableLeave === 0
+                    ? "bg-gray-100 border-gray-300 cursor-not-allowed opacity-60"
+                    : "border-gray-200 bg-[#F9FBFF] hover:border-[#2952CC] hover:bg-[#EAF0FF] hover:shadow-md hover:-translate-y-0.5"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-[#2952CC]" />
+                  <span
+                    className={`font-medium ${
+                      availableLeave === 0
+                        ? "text-gray-500"
+                        : "text-[#0B2A6F]"
+                    }`}
+                  >
+                    Apply Leave
+                  </span>
+                </div>
+                <p
+                  className={`text-[11px] ${
+                    availableLeave === 0
+                      ? "text-gray-400"
+                      : "text-gray-500 group-hover:text-gray-700"
+                  }`}
+                >
+                  {availableLeave > 0
+                    ? "View status & apply"
+                    : "No leaves left"}
+                </p>
+              </button>
+
+              <button
+                onClick={handlePayslipsClick}
+                className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              >
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-[#2952CC]" />
+                  <span className="font-medium text-[#0B2A6F]">Payslips</span>
+                </div>
+                <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
+                  Finance Hub
+                </p>
+              </button>
+
+              <button
+                onClick={handleAttendanceClick}
+                className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              >
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-[#2952CC]" />
+                  <span className="font-medium text-[#0B2A6F]">Attendance</span>
+                </div>
+                <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
+                  Clock in/out & history
+                </p>
+              </button>
+
+              <button
+                onClick={handleProfileClick}
+                className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              >
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-[#2952CC]" />
+                  <span className="font-medium text-[#0B2A6F]">My Profile</span>
+                </div>
+                <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
+                  Update personal details
+                </p>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* SNAPSHOT + ACTIVITY */}
+        <section className="grid grid-cols-1 xl:grid-cols-[1.7fr,1.3fr] gap-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-[#0B2A6F]">
+                Work Snapshot
+              </h3>
+              <button className="flex items-center gap-1 text-[11px] text-[#2952CC] hover:text-[#1F3DA3]">
+                View reports <ArrowRightCircle className="h-3 w-3" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-gray-500">Current project</span>
+                  <Briefcase className="h-4 w-4 text-[#2952CC]" />
+                </div>
+                <p className="text-sm font-semibold text-[#0B2A6F]">
+                  {snapshot.currentProject || "No project assigned"}
+                </p>
+                <div className="mt-2 h-1.5 w-full rounded-full bg-[#E5EDFF] overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#2952CC] to-[#2DAF7D]"
+                    style={{
+                      width: `${snapshot.projectProgressPercent || 0}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-gray-500">This month</span>
+                  <Clock className="h-4 w-4 text-[#2952CC]" />
+                </div>
+                <p className="text-sm font-semibold text-[#0B2A6F]">
+                  Logged Hours
+                </p>
+                <p className="text-2xl font-semibold text-[#0B2A6F]">
+                  {snapshot.loggedHours || "--"}
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-gray-500">Pending</span>
+                  <CheckCircle className="h-4 w-4 text-[#2952CC]" />
+                </div>
+                <p className="text-sm font-semibold text-[#0B2A6F]">HR Items</p>
+                {snapshot.pendingItems.length > 0 ? (
+                  <ul className="mt-1 space-y-1 text-[11px] text-gray-700">
+                    {snapshot.pendingItems.slice(0, 3).map((item, idx) => (
+                      <li key={idx}>• {item}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-1 text-[11px] text-gray-500">
+                    All caught up!
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
+              <h3 className="text-sm font-semibold text-[#0B2A6F] mb-3">
+                Recent Activity
+              </h3>
+              {myLeaves.length > 0 ? (
+                myLeaves.slice(-3).map((leave) => (
+                  <div
+                    key={leave.id}
+                    className="flex gap-3 items-start py-2 border-b border-gray-100 last:border-b-0"
+                  >
+                    <div
+                      className={`px-2 py-1 rounded-full text-[10px] font-medium ${getActivityPillClasses(
+                        { status: leave.status }
+                      )}`}
+                    >
+                      {formatTime(leave.startDate)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-[#0B2A6F]">
+                        {leave.type || "Leave Request"}
+                      </p>
+                      <p className="text-[11px] text-gray-500">
+                        {leave.startDate && leave.endDate
+                          ? `${formatShortDate(
+                              leave.startDate
+                            )} - ${formatShortDate(leave.endDate)}`
+                          : "Leave application"}
+                      </p>
+                      <span
+                        className={`text-[10px] px-2 py-1 rounded-full ${getEventBadgeClasses(
+                          leave
+                        )}`}
+                      >
+                        {leave.status || "Pending"}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-gray-500">No recent activity</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
+              <h3 className="text-sm font-semibold text-[#0B2A6F] mb-2">
+                Upcoming Leaves
+              </h3>
+              <p className="text-xs text-gray-500 mb-4">Next 30 days</p>
+              {myLeaves
+                .filter(
+                  (leave) =>
+                    new Date(leave.startDate) > new Date() &&
+                    ["APPROVED", "PENDING"].includes(
+                      (leave.status || "").toUpperCase()
+                    )
+                )
+                .slice(0, 3).length > 0 ? (
+                myLeaves
+                  .filter(
+                    (leave) =>
+                      new Date(leave.startDate) > new Date() &&
+                      ["APPROVED", "PENDING"].includes(
+                        (leave.status || "").toUpperCase()
+                      )
+                  )
+                  .slice(0, 3)
+                  .map((leave) => (
+                    <div
+                      key={leave.id}
+                      className="flex items-start gap-3 p-3 rounded-xl border bg-[#F9FBFF] mb-3"
+                    >
+                      <div className="bg-[#E3EBFF] text-[#0B2A6F] h-10 w-10 rounded-lg flex flex-col items-center justify-center text-[11px]">
+                        <span>
+                          {formatShortDate(leave.startDate)?.slice(0, 2)}
+                        </span>
+                        <span className="text-[9px] uppercase">
+                          {formatShortDate(leave.startDate)?.slice(3)}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-[#0B2A6F]">
+                          {leave.type || "Leave"}
+                        </p>
+                        <p className="text-[11px] text-gray-500">
+                          {leave.reason || "Approved leave"}
+                        </p>
+                      </div>
+                      <span
+                        className={`text-[11px] font-medium ${getEventBadgeClasses(
+                          leave
+                        )}`}
+                      >
+                        {leave.status}
+                      </span>
+                    </div>
+                  ))
+              ) : (
+                <p className="text-xs text-gray-500">No upcoming leaves</p>
+              )}
+            </div>
+
+            <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
+              <h3 className="text-sm font-semibold text-[#0B2A6F] mb-3">
+                Wellness
+              </h3>
+              {wellnessHighlights.length === 0 ? (
+                <p className="text-xs text-gray-500">No updates available</p>
+              ) : (
+                wellnessHighlights.slice(0, 3).map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-3 p-3 rounded-xl border bg-[#F9FBFF] mb-3"
+                  >
+                    <div className="h-9 w-9 rounded-xl bg-[#E3EBFF] flex items-center justify-center">
+                      <HeartPulse className="h-4 w-4 text-[#2952CC]" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-[#0B2A6F]">{item.title}</p>
+                      <p className="text-[11px] text-gray-500">
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+              <div className="pt-2">
+                <button
+                  onClick={handleProfileClick}
+                  className="text-[11px] text-[#2952CC] hover:text-[#1F3DA3] flex items-center gap-1"
+                >
+                  Update profile <ArrowRightCircle className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
