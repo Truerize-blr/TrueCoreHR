@@ -17,10 +17,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "performance_feedback")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class PerformanceFeedback {
     
     @Id
