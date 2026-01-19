@@ -12,6 +12,21 @@ public class RegisterRequest {
     private String employeeId;
     private String role;
     private String department;
+    private String dob;
+    private String joiningDate;
+    
+	public String getDob() {
+		return dob;
+	}
+	public void setDob(String dob) {
+		this.dob = dob;
+	}
+	public String getJoiningDate() {
+		return joiningDate;
+	}
+	public void setJoiningDate(String joiningDate) {
+		this.joiningDate = joiningDate;
+	}
 	public String getEmail() {
 		return email;
 	}

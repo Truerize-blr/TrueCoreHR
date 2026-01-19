@@ -1,5 +1,3 @@
-//ManageEmployees
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -13,9 +11,13 @@ export default function ManageEmployees() {
 
   const [editForm, setEditForm] = useState({
     id: null,
-    name: "",
+    fullName: "",
     email: "",
-    role: "",
+    mobile: "",
+    position: "",
+    department: "",
+    employeeId: "",
+    status: "",
   });
 
   const primaryBlue = "#00008B";
@@ -25,60 +27,63 @@ export default function ManageEmployees() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  // -------- Helpers to normalize API response --------
-
-  const normalizeEmployee = (e) => ({
-    id: e.id ?? e.empId ?? e.employeeId ?? e.userId ?? "",
-    name: e.name ?? e.fullName ?? e.employeeName ?? e.username ?? "",
-    email: e.email ?? e.mailId ?? "",
-    role: e.role ?? e.roleName ?? e.designation ?? "",
-  });
-
-  const extractEmployeeList = (data) => {
-    // Log once to verify shape in browser console
-    console.log("Employees API raw response:", data);
-
-    if (!data) return [];
-
-    // If backend returns a plain list
-    if (Array.isArray(data)) {
-      return data.map(normalizeEmployee);
-    }
-
-    // Common Spring / custom wrappers
-    if (Array.isArray(data.content)) {
-      return data.content.map(normalizeEmployee);
-    }
-    if (Array.isArray(data.data)) {
-      return data.data.map(normalizeEmployee);
-    }
-    if (Array.isArray(data.users)) {
-      return data.users.map(normalizeEmployee);
-    }
-    if (Array.isArray(data.employees)) {
-      return data.employees.map(normalizeEmployee);
-    }
-
-    // Fallback: not a list
-    return [];
+  // -------- Normalize API response --------
+  const normalizeEmployee = (user) => {
+    console.log("Raw user object:", user);
+    return {
+      id: user.id,
+      fullName: user.fullName || "",
+      email: user.email || "",
+      mobile: user.mobile || "",
+      position: user.position || "",
+      department: user.department || "",
+      employeeId: user.employeeId || "",
+      status: user.status || "",
+      role: user.role || "",
+      dob: user.dob || "",
+      joiningDate: user.joiningDate || "",
+    };
   };
 
-  // ========== API ==========
+  const extractEmployeeList = (apiResponse) => {
+    console.log("Full API response:", apiResponse);
+
+    if (!apiResponse) return [];
+
+    // Handle ApiResponse wrapper: { success, message, data }
+    if (apiResponse.data !== undefined) {
+      if (Array.isArray(apiResponse.data)) {
+        return apiResponse.data.map(normalizeEmployee);
+      }
+      return [normalizeEmployee(apiResponse.data)];
+    }
+
+    // Direct array
+    if (Array.isArray(apiResponse)) {
+      return apiResponse.map(normalizeEmployee);
+    }
+
+    // Single object
+    return [normalizeEmployee(apiResponse)];
+  };
+
+  // ========== API Calls ==========
 
   const fetchEmployees = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const res = await axios.get(
-        `${API_BASE_URL}/api/admin/attendance/users`
-      );
+      const res = await axios.get(`${API_BASE_URL}/api/users`);
+      console.log("Fetch employees response:", res.data);
 
       const list = extractEmployeeList(res.data);
+      console.log("Normalized employee list:", list);
       setEmployees(list);
     } catch (err) {
       console.error("Error fetching employees", err);
-      setError("Failed to load employees");
+      const errorMsg = err.response?.data?.message || err.message;
+      setError("Failed to load employees: " + errorMsg);
       setEmployees([]);
     } finally {
       setLoading(false);
@@ -87,112 +92,143 @@ export default function ManageEmployees() {
 
   const refreshSingleEmployee = async (empId) => {
     try {
-      const res = await axios.get(
-        `${API_BASE_URL}/api/admin/attendance/users/${empId}`
-      );
-      const [updated] = extractEmployeeList(res.data);
-      if (!updated) return;
+      const res = await axios.get(`${API_BASE_URL}/api/users/${empId}`);
+      console.log("Refresh response:", res.data);
+      
+      const list = extractEmployeeList(res.data);
+      const updated = list[0];
+      
+      if (!updated) {
+        alert("Failed to refresh - no data returned");
+        return;
+      }
 
       setEmployees((prev) =>
         prev.map((e) => (e.id === empId ? updated : e))
       );
+      alert("Employee refreshed successfully!");
     } catch (err) {
       console.error("Error refreshing employee", err);
-      alert("Failed to refresh employee");
+      alert("Failed to refresh: " + (err.response?.data?.message || err.message));
     }
   };
 
   const updateEmployee = async (payload) => {
-    await axios.put(
-      `${API_BASE_URL}/api/admin/attendance/users/${payload.id}`,
-      payload
+    // Send only the fields that backend expects
+    const updatePayload = {
+      fullName: payload.fullName,
+      email: payload.email,
+      mobile: payload.mobile || null,
+      position: payload.position || null,
+      department: payload.department || null,
+      employeeId: payload.employeeId || null,
+      status: payload.status || null,
+    };
+
+    console.log("Updating employee with payload:", updatePayload);
+
+    const res = await axios.put(
+      `${API_BASE_URL}/api/users/${payload.id}`,
+      updatePayload
     );
+    
+    console.log("Update response:", res.data);
+    return res.data;
   };
 
   const deleteEmployeeApi = async (empId) => {
-    await axios.delete(
-      `${API_BASE_URL}/api/admin/attendance/users/${empId}`
-    );
+    await axios.delete(`${API_BASE_URL}/api/users/${empId}`);
   };
 
-  // ========== EFFECTS ==========
-
+  // ========== Effects ==========
   useEffect(() => {
     fetchEmployees();
   }, []);
 
-  // ========== FILTERING ==========
-
+  // ========== Filter ==========
   const filtered = employees.filter((emp) => {
     const s = search.trim().toLowerCase();
     if (!s) return true;
 
-    const searchMatch =
+    return (
       emp.id?.toString().toLowerCase().includes(s) ||
-      emp.name?.toLowerCase().includes(s) ||
+      emp.fullName?.toLowerCase().includes(s) ||
       emp.email?.toLowerCase().includes(s) ||
-      emp.role?.toLowerCase().includes(s);
-
-    return !!searchMatch;
+      emp.position?.toLowerCase().includes(s) ||
+      emp.department?.toLowerCase().includes(s) ||
+      emp.employeeId?.toLowerCase().includes(s) ||
+      emp.mobile?.toLowerCase().includes(s)
+    );
   });
 
-  // View Modal
+  // ========== Handlers ==========
   const handleView = (emp) => {
     setCurrentEmployee(emp);
     setShowViewModal(true);
   };
 
-  // Edit Modal
   const handleEdit = (emp) => {
     setCurrentEmployee(emp);
     setEditForm({
       id: emp.id,
-      name: emp.name || "",
+      fullName: emp.fullName || "",
       email: emp.email || "",
-      role: emp.role || "",
+      mobile: emp.mobile || "",
+      position: emp.position || "",
+      department: emp.department || "",
+      employeeId: emp.employeeId || "",
+      status: emp.status || "",
     });
     setShowEditModal(true);
   };
 
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
+  const handleEditSubmit = async () => {
+    if (!editForm.fullName || !editForm.email) {
+      alert("Full Name and Email are required!");
+      return;
+    }
+
     try {
       setSaving(true);
-      await updateEmployee(editForm);
+      const response = await updateEmployee(editForm);
+      
+      const updatedList = extractEmployeeList(response);
+      const updatedEmployee = updatedList[0] || editForm;
 
       setEmployees((prev) =>
-        prev.map((emp) => (emp.id === currentEmployee.id ? editForm : emp))
+        prev.map((emp) => (emp.id === currentEmployee.id ? updatedEmployee : emp))
       );
 
       setShowEditModal(false);
       setCurrentEmployee(null);
+      alert("Employee updated successfully!");
     } catch (err) {
       console.error("Error updating employee", err);
-      alert("Failed to update employee");
+      alert("Failed to update: " + (err.response?.data?.message || err.message));
     } finally {
       setSaving(false);
     }
   };
 
-  // Refresh
   const handleRefresh = (emp) => {
     refreshSingleEmployee(emp.id);
   };
 
-  // Delete
   const handleDelete = async (emp) => {
-    if (!window.confirm(`Delete ${emp.name}?`)) return;
+    if (!window.confirm(`Delete ${emp.fullName}?`)) return;
+    
     try {
       await deleteEmployeeApi(emp.id);
       setEmployees((prev) => prev.filter((e) => e.id !== emp.id));
+      alert("Employee deleted successfully!");
     } catch (err) {
       console.error("Error deleting employee", err);
-      alert("Failed to delete employee");
+      alert("Failed to delete: " + (err.response?.data?.message || err.message));
     }
   };
 
   return (
-    <div className="min-h-screen px-4 md:px-6 py-4">
+    <div className="min-h-screen px-4 md:px-6 py-4 bg-gray-50">
       {/* Header */}
       <div
         className="rounded-2xl px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6"
@@ -202,162 +238,203 @@ export default function ManageEmployees() {
           <h1 className="text-xl md:text-2xl font-bold text-white">
             Employee Management
           </h1>
-          <p className="text-xs md:text-sm text-blue-100 mt-1 max-w-xl">
-            Manage employee records, update details, and perform all actions
-            from one place.
+          <p className="text-xs md:text-sm text-blue-100 mt-1">
+            View and manage all employee records
           </p>
         </div>
         <button
           onClick={fetchEmployees}
-          className="text-xs px-3 py-2 rounded-full bg-white/10 text-white border border-white/30 hover:bg-white/20"
+          className="text-xs px-4 py-2 rounded-lg bg-white/10 text-white border border-white/30 hover:bg-white/20 transition"
         >
-          Refresh List
+          🔄 Refresh All
         </button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        {/* Search */}
+      {/* Search */}
+      <div className="mb-6">
         <input
           type="text"
-          placeholder="Search by ID, name, email, role..."
-          className="w-full md:w-1/2 px-4 py-2 border border-[#000080] rounded-lg
+          placeholder="🔍 Search by name, email, position, department, employee ID..."
+          className="w-full px-4 py-3 border-2 border-[#000080] rounded-xl
                      text-[#000080] placeholder-gray-400
-                     focus:ring-2 focus:ring-[#000080] outline-none"
+                     focus:ring-2 focus:ring-[#000080] focus:border-transparent outline-none"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
+      {/* Error */}
       {error && (
-        <p className="text-xs text-red-600 mb-2">
-          {error}
-        </p>
+        <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+          <p className="text-sm text-red-700 font-medium">{error}</p>
+        </div>
       )}
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-[#000080] text-white">
-            <tr>
-              <th className="py-3 px-4 w-1/6 text-left">Employee ID</th>
-              <th className="py-3 px-4 w-1/3 text-left">Employee</th>
-              <th className="py-3 px-4 w-1/3 text-left">Email</th>
-              <th className="py-3 px-4 w-1/6 text-center">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {loading ? (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-[#000080] text-white">
               <tr>
-                <td
-                  colSpan={4}
-                  className="py-6 px-4 text-center text-sm text-gray-500"
-                >
-                  Loading employees...
-                </td>
+                <th className="py-3 px-4 text-left text-sm font-semibold">Employee ID</th>
+                <th className="py-3 px-4 text-left text-sm font-semibold">Name</th>
+                <th className="py-3 px-4 text-left text-sm font-semibold">Email</th>
+                <th className="py-3 px-4 text-left text-sm font-semibold">Position</th>
+                <th className="py-3 px-4 text-left text-sm font-semibold">Department</th>
+                <th className="py-3 px-4 text-center text-sm font-semibold">Actions</th>
               </tr>
-            ) : filtered.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="py-6 px-4 text-center text-sm text-gray-500"
-                >
-                  No employees found.
-                </td>
-              </tr>
-            ) : (
-              filtered.map((emp) => (
-                <tr
-                  key={emp.id}
-                  className="border-b border-gray-200 hover:bg-gray-50"
-                >
-                  {/* EMPLOYEE ID */}
-                  <td className="py-4 px-4 text-[#000080] font-semibold">
-                    {emp.id}
-                  </td>
+            </thead>
 
-                  {/* EMPLOYEE NAME + ROLE */}
-                  <td className="py-4 px-4">
-                    <p className="text-[#000080] font-semibold">
-                      {emp.name}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {emp.role}
-                    </p>
-                  </td>
-
-                  {/* EMAIL */}
-                  <td className="py-4 px-4 text-[#000080] font-medium">
-                    {emp.email}
-                  </td>
-
-                  {/* ACTION BUTTONS */}
-                  <td className="py-4 px-4 flex justify-center gap-3">
-                    {/* View */}
-                    <button
-                      onClick={() => handleView(emp)}
-                      className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
-                    >
-                      👁️
-                    </button>
-
-                    {/* Edit */}
-                    <button
-                      onClick={() => handleEdit(emp)}
-                      className="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200"
-                    >
-                      ✏️
-                    </button>
-
-                    {/* Refresh */}
-                    <button
-                      onClick={() => handleRefresh(emp)}
-                      className="p-2 bg-[#000080]/10 text-[#000080] rounded-lg hover:bg-[#000080]/20"
-                    >
-                      🔄
-                    </button>
-
-                    {/* Delete */}
-                    <button
-                      onClick={() => handleDelete(emp)}
-                      className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
-                    >
-                      🗑️
-                    </button>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="py-12 px-4 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-8 h-8 border-4 border-[#000080] border-t-transparent rounded-full animate-spin"></div>
+                      <p className="text-sm text-gray-500">Loading employees...</p>
+                    </div>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 px-4 text-center">
+                    <p className="text-gray-500">No employees found</p>
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((emp) => (
+                  <tr
+                    key={emp.id}
+                    className="border-b border-gray-100 hover:bg-blue-50 transition"
+                  >
+                    <td className="py-3 px-4 text-gray-700 text-sm font-medium">
+                      {emp.employeeId || "-"}
+                    </td>
+                    <td className="py-3 px-4">
+                      <p className="text-[#000080] font-semibold text-sm">
+                        {emp.fullName}
+                      </p>
+                      <p className="text-xs text-gray-500">{emp.role}</p>
+                    </td>
+                    <td className="py-3 px-4 text-[#000080] text-sm">
+                      {emp.email}
+                    </td>
+                    <td className="py-3 px-4 text-gray-700 text-sm font-medium">
+                      <span className="bg-blue-50 px-3 py-1 rounded-full">
+                        {emp.position || "Not Set"}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-gray-700 text-sm font-medium">
+                      <span className="bg-purple-50 px-3 py-1 rounded-full">
+                        {emp.department || "Not Set"}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => handleView(emp)}
+                          className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm"
+                          title="View Details"
+                        >
+                          👁️
+                        </button>
+                        <button
+                          onClick={() => handleEdit(emp)}
+                          className="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition text-sm"
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleRefresh(emp)}
+                          className="p-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition text-sm"
+                          title="Refresh"
+                        >
+                          🔄
+                        </button>
+                        <button
+                          onClick={() => handleDelete(emp)}
+                          className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm"
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* ---------- VIEW MODAL ---------- */}
+      {/* VIEW MODAL */}
       {showViewModal && currentEmployee && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-[90%] max-w-md rounded-xl p-6 shadow-lg border-t-4 border-[#000080]">
-            <h2 className="text-xl font-bold text-[#000080] mb-4">
-              Employee Details
-            </h2>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl border-t-4 border-[#000080] max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-[#000080]">
+                Employee Details
+              </h2>
+              <button
+                onClick={() => setShowViewModal(false)}
+                className="text-gray-400 hover:text-gray-700 text-2xl"
+              >
+                ✕
+              </button>
+            </div>
 
-            <div className="space-y-3 text-gray-700">
-              <p>
-                <strong>Employee ID:</strong> {currentEmployee.id}
-              </p>
-              <p>
-                <strong>Name:</strong> {currentEmployee.name}
-              </p>
-              <p>
-                <strong>Email:</strong> {currentEmployee.email}
-              </p>
-              <p>
-                <strong>Role:</strong> {currentEmployee.role}
-              </p>
+            <div className="space-y-4">
+              <div className="flex border-b pb-3">
+                <strong className="text-gray-600 w-40">ID:</strong>
+                <p className="text-[#000080] font-semibold">{currentEmployee.id}</p>
+              </div>
+              <div className="flex border-b pb-3">
+                <strong className="text-gray-600 w-40">Employee ID:</strong>
+                <p className="text-[#000080] font-semibold">{currentEmployee.employeeId || "-"}</p>
+              </div>
+              <div className="flex border-b pb-3">
+                <strong className="text-gray-600 w-40">Full Name:</strong>
+                <p className="text-[#000080] font-semibold">{currentEmployee.fullName}</p>
+              </div>
+              <div className="flex border-b pb-3">
+                <strong className="text-gray-600 w-40">Email:</strong>
+                <p className="text-[#000080]">{currentEmployee.email}</p>
+              </div>
+              <div className="flex border-b pb-3">
+                <strong className="text-gray-600 w-40">Mobile:</strong>
+                <p className="text-[#000080]">{currentEmployee.mobile || "-"}</p>
+              </div>
+              <div className="flex border-b pb-3">
+                <strong className="text-gray-600 w-40">Position:</strong>
+                <p className="text-[#000080]">{currentEmployee.position || "-"}</p>
+              </div>
+              <div className="flex border-b pb-3">
+                <strong className="text-gray-600 w-40">Department:</strong>
+                <p className="text-[#000080]">{currentEmployee.department || "-"}</p>
+              </div>
+              <div className="flex border-b pb-3">
+                <strong className="text-gray-600 w-40">Role:</strong>
+                <p className="text-[#000080]">{currentEmployee.role || "-"}</p>
+              </div>
+              <div className="flex border-b pb-3">
+                <strong className="text-gray-600 w-40">Status:</strong>
+                <p className="text-[#000080]">{currentEmployee.status || "-"}</p>
+              </div>
+              <div className="flex border-b pb-3">
+                <strong className="text-gray-600 w-40">DOB:</strong>
+                <p className="text-[#000080]">{currentEmployee.dob || "-"}</p>
+              </div>
+              <div className="flex">
+                <strong className="text-gray-600 w-40">Joining Date:</strong>
+                <p className="text-[#000080]">{currentEmployee.joiningDate || "-"}</p>
+              </div>
             </div>
 
             <button
               onClick={() => setShowViewModal(false)}
-              className="mt-6 w-full py-2 bg-[#000080] text-white rounded-lg"
+              className="mt-6 w-full py-3 bg-[#000080] text-white rounded-lg hover:bg-[#000060] transition font-semibold"
             >
               Close
             </button>
@@ -365,105 +442,169 @@ export default function ManageEmployees() {
         </div>
       )}
 
-      {/* ---------- EDIT MODAL ---------- */}
+      {/* EDIT MODAL */}
       {showEditModal && currentEmployee && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-[95%] max-w-2xl rounded-3xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
-            {/* Header */}
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-2xl rounded-2xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold text-[#000080]">
+              <h2 className="text-2xl font-bold text-[#000080]">
                 Edit Employee
               </h2>
               <button
                 onClick={() => setShowEditModal(false)}
-                className="text-gray-400 hover:text-gray-700"
+                className="text-gray-400 hover:text-gray-700 text-2xl"
               >
                 ✕
               </button>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleEditSubmit} className="space-y-5">
-              {/* Employee ID (read-only) */}
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-500">
-                  Employee ID:
+            <div className="space-y-4">
+              {/* ID (Read-only) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  System ID
                 </label>
                 <input
                   type="text"
                   value={editForm.id}
                   readOnly
-                  className="w-full rounded-2xl bg-gray-100 text-gray-700 px-4 py-3 border-none outline-none"
+                  className="w-full rounded-lg bg-gray-100 text-gray-600 px-4 py-2 border-none outline-none"
                 />
               </div>
 
-              {/* Name */}
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-500">
-                  Name:
+              {/* Employee ID */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Employee ID
                 </label>
                 <input
                   type="text"
-                  value={editForm.name}
+                  value={editForm.employeeId}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, name: e.target.value })
+                    setEditForm({ ...editForm, employeeId: e.target.value })
                   }
-                  className="w-full rounded-2xl bg-[#020617] text-white px-4 py-3 border-none focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full rounded-lg bg-gray-50 text-gray-800 px-4 py-2 border-2 border-gray-200 focus:border-[#000080] outline-none"
+                  placeholder="e.g., EMP001"
+                />
+              </div>
+
+              {/* Full Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.fullName}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, fullName: e.target.value })
+                  }
+                  className="w-full rounded-lg bg-gray-50 text-gray-800 px-4 py-2 border-2 border-gray-200 focus:border-[#000080] outline-none"
                 />
               </div>
 
               {/* Email */}
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-500">
-                  Email:
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Email <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
+                  required
                   value={editForm.email}
                   onChange={(e) =>
                     setEditForm({ ...editForm, email: e.target.value })
                   }
-                  className="w-full rounded-2xl bg-[#020617] text-white px-4 py-3 border-none focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full rounded-lg bg-gray-50 text-gray-800 px-4 py-2 border-2 border-gray-200 focus:border-[#000080] outline-none"
                 />
               </div>
 
-              {/* Role */}
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-500">
-                  Role:
+              {/* Mobile */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Mobile
                 </label>
                 <input
                   type="text"
-                  value={editForm.role}
+                  value={editForm.mobile}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, role: e.target.value })
+                    setEditForm({ ...editForm, mobile: e.target.value })
                   }
-                  className="w-full rounded-2xl bg-[#020617] text-white px-4 py-3 border-none focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full rounded-lg bg-gray-50 text-gray-800 px-4 py-2 border-2 border-gray-200 focus:border-[#000080] outline-none"
+                  placeholder="e.g., +91 9876543210"
                 />
               </div>
 
-              {/* Save Button */}
-              <div className="pt-4 flex justify-center">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="w-full max-w-sm py-3 rounded-2xl bg-[#4f46e5] hover:bg-[#4338ca] text-white font-semibold text-sm tracking-wide shadow-md disabled:opacity-60"
-                >
-                  {saving ? "Saving..." : "Save Changes"}
-                </button>
+              {/* Position */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Position
+                </label>
+                <input
+                  type="text"
+                  value={editForm.position}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, position: e.target.value })
+                  }
+                  className="w-full rounded-lg bg-gray-50 text-gray-800 px-4 py-2 border-2 border-gray-200 focus:border-[#000080] outline-none"
+                  placeholder="e.g., Software Engineer"
+                />
               </div>
 
-              {/* Cancel */}
-              <div className="flex justify-center">
+              {/* Department */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Department
+                </label>
+                <input
+                  type="text"
+                  value={editForm.department}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, department: e.target.value })
+                  }
+                  className="w-full rounded-lg bg-gray-50 text-gray-800 px-4 py-2 border-2 border-gray-200 focus:border-[#000080] outline-none"
+                  placeholder="e.g., Engineering"
+                />
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Status
+                </label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, status: e.target.value })
+                  }
+                  className="w-full rounded-lg bg-gray-50 text-gray-800 px-4 py-2 border-2 border-gray-200 focus:border-[#000080] outline-none"
+                >
+                  <option value="">Select Status</option>
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="INACTIVE">INACTIVE</option>
+                  <option value="ON_LEAVE">ON_LEAVE</option>
+                  <option value="TERMINATED">TERMINATED</option>
+                </select>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3 pt-4">
                 <button
-                  type="button"
+                  onClick={handleEditSubmit}
+                  disabled={saving}
+                  className="flex-1 py-3 rounded-lg bg-[#000080] hover:bg-[#000060] text-white font-semibold disabled:opacity-50 transition"
+                >
+                  {saving ? "Saving..." : "💾 Save Changes"}
+                </button>
+                <button
                   onClick={() => setShowEditModal(false)}
-                  className="mt-2 text-xs text-gray-500 hover:text-gray-700"
+                  className="px-6 py-3 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold transition"
                 >
                   Cancel
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

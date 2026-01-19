@@ -235,13 +235,13 @@ export default function HomePage() {
                  <div className="flex-1 flex flex-col gap-4 animate-scroll-up">
                     {/* --- Content Block A --- */}
                     <ActivityCard title="New Hire" desc="Sarah Jenkins joined Design" time="2m ago" icon="🎉" color="bg-green-100" />
-                    <ActivityCard title="Payroll Run" desc="$142k processed successfully" time="1h ago" icon="💰" color="bg-blue-100" />
+                    <ActivityCard title="Payroll Run" desc="₹142k processed successfully" time="1h ago" icon="💰" color="bg-blue-100" />
                     <ActivityCard title="Leave Request" desc="Mike requested 3 days off" time="3h ago" icon="📅" color="bg-orange-100" />
                     <ActivityCard title="Review Cycle" desc="Q4 Reviews started" time="5h ago" icon="📈" color="bg-purple-100" />
                     
                     {/* --- Duplicate Block A (For Seamless Loop) --- */}
                     <ActivityCard title="New Hire" desc="Sarah Jenkins joined Design" time="2m ago" icon="🎉" color="bg-green-100" />
-                    <ActivityCard title="Payroll Run" desc="$142k processed successfully" time="1h ago" icon="💰" color="bg-blue-100" />
+                    <ActivityCard title="Payroll Run" desc="₹142k processed successfully" time="1h ago" icon="💰" color="bg-blue-100" />
                     <ActivityCard title="Leave Request" desc="Mike requested 3 days off" time="3h ago" icon="📅" color="bg-orange-100" />
                     <ActivityCard title="Review Cycle" desc="Q4 Reviews started" time="5h ago" icon="📈" color="bg-purple-100" />
                  </div>
@@ -442,7 +442,7 @@ export default function HomePage() {
                        <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-2xl">💰</div>
                        <div>
                           <p className="text-sm text-slate-500">Total Payroll Cost</p>
-                          <p className="text-2xl font-bold text-slate-900">$142,500.00</p>
+                          <p className="text-2xl font-bold text-slate-900">₹1,42,500.00</p>
                        </div>
                     </div>
                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-4">

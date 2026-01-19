@@ -24,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/employee/notifications")
-@RequiredArgsConstructor
 @CrossOrigin(
 	    origins = "http://localhost:3000",
 	    allowCredentials = "true"
@@ -36,7 +35,6 @@ public class EmployeeNotificationController {
     private  UserService userService; 
 
     @GetMapping
-    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<List<EmployeeNotificationResponse>> getMyNotifications(
             Authentication auth) {
 

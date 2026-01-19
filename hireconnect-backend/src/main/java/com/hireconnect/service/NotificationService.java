@@ -26,7 +26,6 @@ import com.hireconnect.repository.UserNotificationRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class NotificationService {
 
     private NotificationRepository notificationRepo;

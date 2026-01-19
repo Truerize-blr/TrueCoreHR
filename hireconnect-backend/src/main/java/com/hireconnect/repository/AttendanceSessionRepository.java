@@ -59,4 +59,8 @@ public interface AttendanceSessionRepository extends JpaRepository<AttendanceSes
      @Query("SELECT a FROM AttendanceSession a WHERE a.status IN ('WORKING', 'ON_BREAK') " +
             "AND TIMESTAMPDIFF(SECOND, a.startTime, CURRENT_TIMESTAMP) >= :maxSeconds")
      List<AttendanceSession> findActiveSessionsExceedingDuration(@Param("maxSeconds") int maxSeconds);
+     
+//     @Query("SELECT a FROM AttendanceSession a WHERE a.name=:name")
+//     List<AttendanceSession> findByName(@Param("name") String name);
+     
 }

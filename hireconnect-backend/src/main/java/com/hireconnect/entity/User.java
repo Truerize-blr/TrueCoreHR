@@ -38,9 +38,29 @@ public class User {
     
     private String position;
     
+    private String dob;
+    
+    private String joiningDate;
+    
     private String department;
 
-    @Enumerated(EnumType.STRING)
+    public String getDob() {
+		return dob;
+	}
+
+	public void setDob(String dob) {
+		this.dob = dob;
+	}
+
+	public String getJoiningDate() {
+		return joiningDate;
+	}
+
+	public void setJoiningDate(String joiningDate) {
+		this.joiningDate = joiningDate;
+	}
+
+	@Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
@@ -67,6 +87,17 @@ public class User {
     public Boolean getIsActive() {
 		return isActive;
 	}
+    
+    @Column(name = "profile_photo_url", length = 500)
+    private String profilePhotoUrl;
+    
+    public String getProfilePhotoUrl() {
+        return profilePhotoUrl;
+    }
+
+    public void setProfilePhotoUrl(String profilePhotoUrl) {
+        this.profilePhotoUrl = profilePhotoUrl;
+    }
 
 	public void setIsActive(Boolean isActive) {
 		this.isActive = isActive;

@@ -8,6 +8,8 @@ public class AuthResponse {
     private String employeeId;
     private String role;
     private String onboardingStatus;
+    private String dob;
+    private String joiningDate;
 
     public AuthResponse(
         String token,
@@ -16,7 +18,9 @@ public class AuthResponse {
         String fullName,
         String employeeId,
         String role,
-        String onboardingStatus
+        String onboardingStatus,
+        String dob,
+        String joiningDate
     ) {
         this.token = token;
         this.userId = userId;
@@ -25,6 +29,8 @@ public class AuthResponse {
         this.employeeId = employeeId;
         this.role = role;
         this.onboardingStatus = onboardingStatus;
+        this.dob=dob;
+        this.joiningDate=joiningDate;
     }
 
 	public String getToken() {
@@ -83,4 +89,21 @@ public class AuthResponse {
 		this.onboardingStatus = onboardingStatus;
 	}
 
+	public String getDob() {
+		return dob;
+	}
+
+	public void setDob(String dob) {
+		this.dob = dob;
+	}
+
+	public String getJoiningDate() {
+		return joiningDate;
+	}
+
+	public void setJoiningDate(String joiningDate) {
+		this.joiningDate = joiningDate;
+	}
+	
+	
 }

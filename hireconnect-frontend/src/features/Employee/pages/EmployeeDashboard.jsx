@@ -1,539 +1,4 @@
-
-// import React, { useEffect, useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import {
-//   User,
-//   Calendar,
-//   Clock,
-//   FileText,
-//   ArrowRightCircle,
-//   Activity,
-//   Briefcase,
-//   Star,
-//   PlaneTakeoff,
-//   Coffee,
-//   CheckCircle,
-//   HeartPulse,
-// } from "lucide-react";
-
-// const API_BASE_URL =
-//   (typeof import.meta !== "undefined" &&
-//     import.meta.env &&
-//     import.meta.env.VITE_API_BASE_URL) ||
-//   "http://localhost:8080";
-
-// export default function EmployeeDashboard() {
-//   const navigate = useNavigate();
-
-//   const [employeeName, setEmployeeName] = useState("");
-//   const [nameLoading, setNameLoading] = useState(true);
-//   const [nameError, setNameError] = useState("");
-
-//   const handleProfileClick = () => navigate("/employee/profile");
-//   const handleLeaveClick = () => navigate("/employee/leave");
-//   const handlePayslipsClick = () => navigate("/employee/payslips");
-//   const handleAttendanceClick = () => navigate("/employee/attendance");
-
-// useEffect(() => {
-//   const fetchEmployeeName = async () => {
-//     try {
-//       const token = localStorage.getItem("token");
-//       const userId = localStorage.getItem("userId");
-
-//       if (!token || !userId) {
-//         setEmployeeName("Employee");
-//         setNameLoading(false);
-//         return;
-//       }
-
-//       const res = await fetch(
-//         `${API_BASE_URL}/api/dashboard/employee/${userId}`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//             "Content-Type": "application/json",
-//           },
-//         }
-//       );
-
-//       if (!res.ok) {
-//         throw new Error(`Failed to fetch employee dashboard: ${res.status}`);
-//       }
-
-//       const apiResponse = await res.json();
-//       console.log("Employee dashboard API response 👉", apiResponse);
-
-//       // ApiResponse<Map<String, Object>> → actual data is inside `data`
-//       const dashboardData = apiResponse.data || {};
-
-//       const nameFromApi =
-//         dashboardData.employeeName ||
-//         dashboardData.fullName ||
-//         (dashboardData.firstName &&
-//           dashboardData.lastName &&
-//           `${dashboardData.firstName} ${dashboardData.lastName}`) ||
-//         dashboardData.firstName ||
-//         dashboardData.name ||
-//         dashboardData.username ||
-//         "Employee";
-
-//       setEmployeeName(nameFromApi);
-//       setNameError("");
-//     } catch (err) {
-//       console.error("Error fetching employee name:", err);
-//       setEmployeeName("Employee");
-//       //setNameError("Could not load name");
-//     } finally {
-//       setNameLoading(false);
-//     }
-//   };
-
-//   fetchEmployeeName();
-// }, []);
-
-//   const displayName = nameLoading ? "..." : employeeName || "Employee";
-
-//   return (
-//     <div className="min-h-screen px-4 md:px-6 py-4">
-//       {/* HEADER */}
-//       <div
-//         className="rounded-2xl px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6 shadow-sm"
-//         style={{ backgroundColor: "#00008B" }}
-//       >
-//         <div>
-//           <h1 className="text-xl md:text-2xl font-bold text-white">
-//             Employee Dashboard
-//           </h1>
-//           <p className="text-xs md:text-sm text-blue-100 mt-1 max-w-xl">
-//             Get a quick overview of your workday, attendance, and HR updates
-//             from a single place.
-//           </p>
-//         </div>
-
-//         <div className="flex gap-4 text-xs md:text-sm text-blue-100">
-//           <div className="flex flex-col items-end">
-//             {nameError && (
-//               <span className="text-[10px] text-red-200">{nameError}</span>
-//             )}
-//           </div>
-//         </div>
-//       </div>
-
-//       <main className="max-w-7xl mx-auto px-4 lg:px-6 py-6 md:py-8 space-y-6 md:space-y-8">
-//         {/* Greeting + Quick summary */}
-//         <section className="grid grid-cols-1 lg:grid-cols-[2fr,1.2fr] gap-6">
-//           {/* Greeting Card */}
-//           <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm">
-//             <div className="absolute -top-16 -right-10 h-40 w-40 rounded-full bg-[#E3EBFF]" />
-//             <div className="relative p-5 md:p-7 flex flex-col md:flex-row md:items-center justify-between gap-6">
-//               <div className="space-y-3">
-//                 <p className="text-[11px] uppercase tracking-[0.18em] text-[#2952CC]">
-//                   Welcome back
-//                 </p>
-//                 <h2 className="text-2xl md:text-3xl font-semibold text-[#0B2A6F]">
-//                   Hi, {displayName} 👋
-//                 </h2>
-//                 <p className="text-sm md:text-base text-gray-600 max-w-xl">
-//                   Here’s a quick view of your workday. Check attendance, manage
-//                   leaves, download payslips and stay updated with HR in one
-//                   place.
-//                 </p>
-
-//                 <div className="flex flex-wrap gap-2 pt-1">
-//                   <span className="inline-flex items-center gap-2 rounded-full bg-[#E3F5FF] text-[#05518C] border border-[#B8E1FF] px-3 py-1 text-[11px] font-medium">
-//                     <Clock className="h-3 w-3" />
-//                     Today&apos;s status: Present
-//                   </span>
-//                   <span className="inline-flex items-center gap-2 rounded-full bg-[#EAF9F1] text-[#19724A] border border-[#B8EBD1] px-3 py-1 text-[11px] font-medium">
-//                     <Star className="h-3 w-3" />
-//                     Performance: On track
-//                   </span>
-//                 </div>
-//               </div>
-
-//               <div className="grid grid-cols-2 gap-4 min-w-[220px] text-xs md:text-sm">
-//                 <div className="rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3">
-//                   <p className="text-gray-500 text-[11px]">
-//                     This month attendance
-//                   </p>
-//                   <p className="mt-1 text-xl font-semibold text-[#0B2A6F]">
-//                     96%
-//                   </p>
-//                   <p className="mt-1 text-[11px] text-[#1B7C4D] flex items-center gap-1">
-//                     <Activity className="h-3 w-3" />
-//                     Great consistency
-//                   </p>
-//                 </div>
-//                 <div className="rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3">
-//                   <p className="text-gray-500 text-[11px]">Available leave</p>
-//                   <p className="mt-1 text-xl font-semibold text-[#0B2A6F]">
-//                     11
-//                   </p>
-//                   <p className="mt-1 text-[11px] text-[#1B5FBF] flex items-center gap-1">
-//                     <PlaneTakeoff className="h-3 w-3" />
-//                     Plan your vacation
-//                   </p>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* Quick actions */}
-//           <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5 flex flex-col justify-between">
-//             <div className="flex items-center justify-between mb-3">
-//               <div>
-//                 <h3 className="text-sm font-semibold text-[#0B2A6F]">
-//                   Quick Actions
-//                 </h3>
-//                 <p className="text-xs text-gray-500">
-//                   One-click access to your most used features.
-//                 </p>
-//               </div>
-//               <span className="rounded-full bg-[#E3EBFF] text-[#0B2A6F] text-[11px] px-3 py-1 font-medium">
-//                 Employee Panel
-//               </span>
-//             </div>
-
-//             <div className="grid grid-cols-2 gap-3 text-xs md:text-sm">
-//               <button
-//                 onClick={handleLeaveClick}
-//                 className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] transition"
-//               >
-//                 <div className="flex items-center gap-2">
-//                   <Calendar className="h-4 w-4 text-[#2952CC]" />
-//                   <span className="font-medium text-[#0B2A6F]">
-//                     Request Leave
-//                   </span>
-//                 </div>
-//                 <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
-//                   Apply for leave and track status.
-//                 </p>
-//               </button>
-
-//               <button
-//                 onClick={handlePayslipsClick}
-//                 className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] transition"
-//               >
-//                 <div className="flex items-center gap-2">
-//                   <FileText className="h-4 w-4 text-[#2952CC]" />
-//                   <span className="font-medium text-[#0B2A6F]">
-//                     View Payslips
-//                   </span>
-//                 </div>
-//                 <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
-//                   Download monthly salary slips.
-//                 </p>
-//               </button>
-
-//               <button
-//                 onClick={handleAttendanceClick}
-//                 className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] transition"
-//               >
-//                 <div className="flex items-center gap-2">
-//                   <Clock className="h-4 w-4 text-[#2952CC]" />
-//                   <span className="font-medium text-[#0B2A6F]">
-//                     Attendance
-//                   </span>
-//                 </div>
-//                 <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
-//                   Check in/out history & hours.
-//                 </p>
-//               </button>
-
-//               <button
-//                 onClick={handleProfileClick}
-//                 className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] transition"
-//               >
-//                 <div className="flex items-center gap-2">
-//                   <User className="h-4 w-4 text-[#2952CC]" />
-//                   <span className="font-medium text-[#0B2A6F]">
-//                     My Profile
-//                   </span>
-//                 </div>
-//                 <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
-//                   Update personal & work details.
-//                 </p>
-//               </button>
-//             </div>
-//           </div>
-//         </section>
-
-//         {/* Middle section: Stats + Timeline */}
-//         <section className="grid grid-cols-1 xl:grid-cols-[1.7fr,1.3fr] gap-6">
-//           {/* Stats cards + Activity */}
-//           <div className="space-y-4">
-//             <div className="flex items-center justify-between">
-//               <h3 className="text-sm font-semibold text-[#0B2A6F]">
-//                 Work & HR Snapshot
-//               </h3>
-//               <button className="flex items-center gap-1 text-[11px] text-[#2952CC] hover:text-[#1F3DA3]">
-//                 View detailed reports
-//                 <ArrowRightCircle className="h-3 w-3" />
-//               </button>
-//             </div>
-
-//             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-//               <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
-//                 <div className="flex items-center justify-between">
-//                   <span className="text-[11px] text-gray-500">
-//                     Current project
-//                   </span>
-//                   <Briefcase className="h-4 w-4 text-[#2952CC]" />
-//                 </div>
-//                 <p className="text-sm font-semibold text-[#0B2A6F]">
-//                   HRMS Portal - Employee Module
-//                 </p>
-//                 <p className="text-[11px] text-gray-500">
-//                   Status:{" "}
-//                   <span className="text-[#1B7C4D] font-medium">Active</span>
-//                 </p>
-//                 <div className="mt-2 h-1.5 w-full rounded-full bg-[#E5EDFF] overflow-hidden">
-//                   <div className="h-full w-3/4 bg-gradient-to-r from-[#2952CC] to-[#2DAF7D]" />
-//                 </div>
-//                 <p className="text-[11px] text-gray-500">75% completed</p>
-//               </div>
-
-//               <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
-//                 <div className="flex items-center justify-between">
-//                   <span className="text-[11px] text-gray-500">This month</span>
-//                   <Coffee className="h-4 w-4 text-[#2952CC]" />
-//                 </div>
-//                 <p className="text-sm font-semibold text-[#0B2A6F]">
-//                   Logged Hours
-//                 </p>
-//                 <p className="text-2xl font-semibold text-[#0B2A6F]">142</p>
-//                 <p className="text-[11px] text-[#1B7C4D]">
-//                   +6 hrs above target
-//                 </p>
-//                 <p className="text-[11px] text-gray-500">
-//                   Avg per day: 7.1 hrs
-//                 </p>
-//               </div>
-
-//               <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
-//                 <div className="flex items-center justify-between">
-//                   <span className="text-[11px] text-gray-500">HR Updates</span>
-//                   <CheckCircle className="h-4 w-4 text-[#2952CC]" />
-//                 </div>
-//                 <p className="text-sm font-semibold text-[#0B2A6F]">
-//                   Pending Items
-//                 </p>
-//                 <ul className="mt-1 space-y-1 text-[11px] text-gray-700">
-//                   <li>• 1 document verification</li>
-//                   <li>• 1 feedback form</li>
-//                   <li>• 1 training acknowledgment</li>
-//                 </ul>
-//                 <button className="mt-2 text-[11px] text-[#2952CC] hover:text-[#1F3DA3]">
-//                   View & complete now
-//                 </button>
-//               </div>
-//             </div>
-
-//             {/* Activity timeline */}
-//             <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
-//               <div className="flex items-center justify-between mb-3">
-//                 <div>
-//                   <h3 className="text-sm font-semibold text-[#0B2A6F]">
-//                     Today&apos;s Activity
-//                   </h3>
-//                   <p className="text-xs text-gray-500">
-//                     Key updates from attendance, leaves and HR.
-//                   </p>
-//                 </div>
-//               </div>
-
-//               <div className="space-y-4 text-xs md:text-sm">
-//                 {[
-//                   {
-//                     time: "09:15 AM",
-//                     title: "Login marked (Web)",
-//                     desc: "You have successfully logged in from desktop.",
-//                     colorClasses:
-//                       "bg-[#EAF9F1] text-[#19724A] border-[#B8EBD1]",
-//                   },
-//                   {
-//                     time: "11:30 AM",
-//                     title: "Standup completed",
-//                     desc: "Daily standup update submitted for HRMS Portal.",
-//                     colorClasses:
-//                       "bg-[#E3EBFF] text-[#2952CC] border-[#C2D1FF]",
-//                   },
-//                   {
-//                     time: "03:10 PM",
-//                     title: "Training reminder",
-//                     desc: "Mandatory compliance training scheduled tomorrow.",
-//                     colorClasses:
-//                       "bg-[#FFF5E6] text-[#C96A13] border-[#FFE0B8]",
-//                   },
-//                   {
-//                     time: "05:45 PM",
-//                     title: "Logout pending",
-//                     desc: "Don&apos;t forget to mark your logout before EOD.",
-//                     colorClasses:
-//                       "bg-[#FFECEF] text-[#C2273D] border-[#FFC1CD]",
-//                   },
-//                 ].map((item, idx) => (
-//                   <div
-//                     key={idx}
-//                     className="flex gap-3 md:gap-4 items-start relative"
-//                   >
-//                     <div
-//                       className={`mt-0.5 inline-flex items-center justify-center rounded-full border px-2 py-1 text-[10px] md:text-[11px] ${item.colorClasses}`}
-//                     >
-//                       <Clock className="h-3 w-3 mr-1" />
-//                       <span className="hidden sm:inline">{item.time}</span>
-//                     </div>
-//                     <div className="flex-1">
-//                       <p className="font-medium text-xs md:text-sm text-[#0B2A6F]">
-//                         {item.title}
-//                       </p>
-//                       <p className="text-[11px] md:text-xs text-gray-500">
-//                         {item.desc}
-//                       </p>
-//                     </div>
-//                   </div>
-//                 ))}
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* Right side: Upcoming & Wellness */}
-//           <div className="space-y-4">
-//             {/* Upcoming events */}
-//             <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
-//               <div className="flex items-center justify-between mb-3">
-//                 <div>
-//                   <h3 className="text-sm font-semibold text-[#0B2A6F]">
-//                     Upcoming
-//                   </h3>
-//                   <p className="text-xs text-gray-500">
-//                     Leaves, holidays & important dates.
-//                   </p>
-//                 </div>
-//                 <span className="text-[11px] text-gray-500">
-//                   Next 30 days
-//                 </span>
-//               </div>
-
-//               <div className="space-y-3 text-xs md:text-sm">
-//                 <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-[#F9FBFF] p-3">
-//                   <div className="rounded-lg bg-[#E3EBFF] text-[#0B2A6F] h-10 w-10 flex flex-col items-center justify-center text-[11px] font-semibold">
-//                     <span>02</span>
-//                     <span className="text-[9px] uppercase">Dec</span>
-//                   </div>
-//                   <div className="flex-1">
-//                     <p className="font-medium text-[#0B2A6F]">
-//                       Planned Casual Leave
-//                     </p>
-//                     <p className="text-[11px] text-gray-500">
-//                       CL applied for personal work. Awaiting manager approval.
-//                     </p>
-//                   </div>
-//                   <span className="text-[11px] text-[#C96A13] font-medium">
-//                     Pending
-//                   </span>
-//                 </div>
-
-//                 <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-[#F9FBFF] p-3">
-//                   <div className="rounded-lg bg-[#EAF9F1] text-[#19724A] h-10 w-10 flex flex-col items-center justify-center text-[11px] font-semibold">
-//                     <span>08</span>
-//                     <span className="text-[9px] uppercase">Dec</span>
-//                   </div>
-//                   <div className="flex-1">
-//                     <p className="font-medium text-[#0B2A6F]">
-//                       Company Townhall
-//                     </p>
-//                     <p className="text-[11px] text-gray-500">
-//                       Quarterly business update and Q&amp;A with leadership.
-//                     </p>
-//                   </div>
-//                   <span className="text-[11px] text-[#19724A] font-medium">
-//                     Confirmed
-//                   </span>
-//                 </div>
-
-//                 <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-[#F9FBFF] p-3">
-//                   <div className="rounded-lg bg-[#F4ECFF] text-[#6A3BB7] h-10 w-10 flex flex-col items-center justify-center text-[11px] font-semibold">
-//                     <span>25</span>
-//                     <span className="text-[9px] uppercase">Dec</span>
-//                   </div>
-//                   <div className="flex-1">
-//                     <p className="font-medium text-[#0B2A6F]">Holiday</p>
-//                     <p className="text-[11px] text-gray-500">
-//                       Christmas Day company-wide holiday.
-//                     </p>
-//                   </div>
-//                   <span className="text-[11px] text-gray-600 font-medium">
-//                     Holiday
-//                   </span>
-//                 </div>
-//               </div>
-//             </div>
-
-//             {/* HR highlights / Wellness */}
-//             <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
-//               <div className="flex items-center justify-between mb-3">
-//                 <div>
-//                   <h3 className="text-sm font-semibold text-[#0B2A6F]">
-//                     People & Wellness
-//                   </h3>
-//                   <p className="text-xs text-gray-500">
-//                     Stay balanced with HR&apos;s latest initiatives.
-//                   </p>
-//                 </div>
-//               </div>
-
-//               <div className="space-y-3 text-xs md:text-sm">
-//                 <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-[#F9FBFF] p-3">
-//                   <div className="h-9 w-9 rounded-xl bg-[#E3EBFF] flex items-center justify-center">
-//                     <HeartPulse className="h-4 w-4 text-[#2952CC]" />
-//                   </div>
-//                   <div>
-//                     <p className="font-medium text-[#0B2A6F]">
-//                       Wellness Wednesday
-//                     </p>
-//                     <p className="text-[11px] text-gray-500">
-//                       Join a 20-minute guided meditation session this week.
-//                     </p>
-//                   </div>
-//                 </div>
-
-//                 <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-[#F9FBFF] p-3">
-//                   <div className="h-9 w-9 rounded-xl bg-[#EAF9F1] flex items-center justify-center">
-//                     <Star className="h-4 w-4 text-[#19724A]" />
-//                   </div>
-//                   <div>
-//                     <p className="font-medium text-[#0B2A6F]">
-//                       Kudos from Manager
-//                     </p>
-//                     <p className="text-[11px] text-gray-500">
-//                       &quot;Great ownership on HRMS Employee Module delivery.&quot;
-//                     </p>
-//                   </div>
-//                 </div>
-
-//                 <div className="flex items-center justify-between pt-1">
-//                   <p className="text-[11px] text-gray-500">
-//                     Want to update your personal details or bank info?
-//                   </p>
-//                   <button
-//                     onClick={handleProfileClick}
-//                     className="text-[11px] text-[#2952CC] hover:text-[#1F3DA3] flex items-center gap-1"
-//                   >
-//                     Go to profile
-//                     <ArrowRightCircle className="h-3 w-3" />
-//                   </button>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         </section>
-//       </main>
-//     </div>
-//   );
-// }
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User,
@@ -545,6 +10,10 @@ import {
   Briefcase,
   CheckCircle,
   HeartPulse,
+  Camera,
+  Upload,
+  X,
+  Check,
 } from "lucide-react";
 
 const API_BASE_URL =
@@ -557,6 +26,7 @@ const cleanBase = API_BASE_URL.replace(/\/+$/, "");
 
 export default function EmployeeDashboard() {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   // ---------------- ROUTE HANDLERS ----------------
   const handleProfileClick = () => navigate("/employee/dashboard");
@@ -569,6 +39,10 @@ export default function EmployeeDashboard() {
   const [employeePhotoUrl, setEmployeePhotoUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState("");
+  const [uploadError, setUploadError] = useState("");
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
 
   const [headerStats, setHeaderStats] = useState({
     todayStatus: null,
@@ -680,6 +154,127 @@ export default function EmployeeDashboard() {
     return Math.max(0, 24 - takenLeaves);
   };
 
+  // ---------------- PHOTO UPLOAD HANDLERS ----------------
+  const handlePhotoClick = () => {
+    setShowPhotoModal(true);
+  };
+
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Please select an image file");
+      setTimeout(() => setUploadError(""), 3000);
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("File size must be less than 5MB");
+      setTimeout(() => setUploadError(""), 3000);
+      return;
+    }
+
+    uploadPhoto(file);
+  };
+
+  const uploadPhoto = async (file) => {
+    setUploading(true);
+    setUploadError("");
+    setUploadSuccess("");
+
+    try {
+      const userId = localStorage.getItem("userId");
+      
+      if (!userId) {
+        setUploadError("User ID not found. Please log in again.");
+        setTimeout(() => setUploadError(""), 3000);
+        setUploading(false);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("photo", file);
+      formData.append("userId", userId);
+
+      console.log("Uploading photo for user:", userId);
+
+      const response = await fetch(safeUrl("/api/users/me/upload-photo"), {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        const photoUrl = data.data.photoUrl;
+        setEmployeePhotoUrl(photoUrl);
+        setUploadSuccess("Profile photo updated successfully!");
+        setTimeout(() => {
+          setUploadSuccess("");
+          setShowPhotoModal(false);
+        }, 2000);
+      } else {
+        setUploadError(data.message || "Failed to upload photo");
+        setTimeout(() => setUploadError(""), 3000);
+      }
+    } catch (err) {
+      setUploadError("Error uploading photo. Please try again.");
+      console.error("Upload error:", err);
+      setTimeout(() => setUploadError(""), 3000);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeletePhoto = async () => {
+    if (!window.confirm("Are you sure you want to delete your profile photo?"))
+      return;
+
+    setUploading(true);
+    setUploadError("");
+
+    try {
+      const userId = localStorage.getItem("userId");
+      
+      if (!userId) {
+        setUploadError("User ID not found. Please log in again.");
+        setTimeout(() => setUploadError(""), 3000);
+        setUploading(false);
+        return;
+      }
+
+      const response = await fetch(safeUrl(`/api/users/${userId}/photo`), {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setEmployeePhotoUrl("");
+        setUploadSuccess("Profile photo deleted successfully!");
+        setTimeout(() => {
+          setUploadSuccess("");
+          setShowPhotoModal(false);
+        }, 2000);
+      } else {
+        setUploadError(data.message || "Failed to delete photo");
+        setTimeout(() => setUploadError(""), 3000);
+      }
+    } catch (err) {
+      setUploadError("Error deleting photo. Please try again.");
+      console.error("Delete error:", err);
+      setTimeout(() => setUploadError(""), 3000);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // ---------------- FETCH ALL DATA ----------------
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -727,7 +322,7 @@ export default function EmployeeDashboard() {
           console.warn("User fetch failed:", err);
         }
 
-        // 1.5. Fetch PASSPORT PHOTO from documents endpoint
+        // 1.5. Fetch PASSPORT PHOTO from documents endpoint (fallback)
         try {
           const passportEndpoint = safeUrl(`/api/documents/my-passport-photo`);
           const passportRes = await fetch(passportEndpoint, {
@@ -737,7 +332,7 @@ export default function EmployeeDashboard() {
           if (passportRes.ok) {
             const passportJson = await passportRes.json();
             const passportPhotoUrl = passportJson.data;
-            if (passportPhotoUrl && passportPhotoUrl !== employeePhotoUrl) {
+            if (passportPhotoUrl && !employeePhotoUrl) {
               setEmployeePhotoUrl(passportPhotoUrl);
             }
           }
@@ -898,6 +493,109 @@ export default function EmployeeDashboard() {
 
   return (
     <div className="min-h-screen px-4 md:px-6 py-4 bg-[#F9FAFF]">
+      {/* PHOTO UPLOAD MODAL */}
+      {showPhotoModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Profile Photo
+              </h3>
+              <button
+                onClick={() => setShowPhotoModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+                disabled={uploading}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Photo Preview */}
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative h-40 w-40 rounded-full border-4 border-gray-200 bg-gray-100 overflow-hidden">
+                {employeePhotoUrl ? (
+                  <img
+                    src={employeePhotoUrl}
+                    alt={displayName}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                      e.target.nextSibling.style.display = "flex";
+                    }}
+                  />
+                ) : null}
+                {!employeePhotoUrl && (
+                  <div className="h-full w-full flex items-center justify-center">
+                    <User className="h-20 w-20 text-gray-400" />
+                  </div>
+                )}
+                {uploading && (
+                  <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+                    <div className="text-white text-sm font-medium">
+                      Uploading...
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
+                >
+                  <Upload className="h-4 w-4" />
+                  {uploading
+                    ? "Uploading..."
+                    : employeePhotoUrl
+                    ? "Change Photo"
+                    : "Upload Photo"}
+                </button>
+
+                {employeePhotoUrl && (
+                  <button
+                    onClick={handleDeletePhoto}
+                    disabled={uploading}
+                    className="px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
+                  >
+                    <X className="h-4 w-4" />
+                    Delete
+                  </button>
+                )}
+              </div>
+
+              <p className="text-xs text-gray-500 text-center">
+                JPG, PNG or GIF. Max size 5MB.
+              </p>
+            </div>
+
+            {/* Success Message */}
+            {uploadSuccess && (
+              <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
+                <Check className="h-4 w-4 flex-shrink-0" />
+                {uploadSuccess}
+              </div>
+            )}
+
+            {/* Error Message */}
+            {uploadError && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
+                <X className="h-4 w-4 flex-shrink-0" />
+                {uploadError}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* BLUE HEADER STRIP */}
       <div
         className="rounded-2xl px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6 shadow-sm"
@@ -909,7 +607,8 @@ export default function EmployeeDashboard() {
           </h1>
           <p className="text-xs md:text-sm text-blue-100 mt-1 max-w-xl">
             24 leaves allocated per year.{" "}
-            {takenLeave > 0 && `${takenLeave} taken, `}{availableLeave} remaining.
+            {takenLeave > 0 && `${takenLeave} taken, `}
+            {availableLeave} remaining.
           </p>
         </div>
 
@@ -931,20 +630,32 @@ export default function EmployeeDashboard() {
             <div className="relative p-5 md:p-7 flex flex-col justify-between gap-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 md:h-20 md:w-20 rounded-full border-2 border-[#C2D1FF] bg-[#E3EBFF] overflow-hidden flex items-center justify-center">
+                  <div
+                    onClick={handlePhotoClick}
+                    className="relative h-16 w-16 md:h-20 md:w-20 rounded-full border-2 border-[#C2D1FF] bg-[#E3EBFF] overflow-hidden flex items-center justify-center cursor-pointer group"
+                  >
                     {employeePhotoUrl ? (
-                      <img
-                        src={employeePhotoUrl}
-                        alt={displayName}
-                        className="h-full w-full object-cover rounded-full"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    {!employeePhotoUrl && (
-                      <User className="h-8 w-8 md:h-10 md:w-10 text-[#2952CC] flex-shrink-0" />
+                      <>
+                        <img
+                          src={employeePhotoUrl}
+                          alt={displayName}
+                          className="h-full w-full object-cover rounded-full"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                            e.target.nextSibling.style.display = "flex";
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <Camera className="h-6 w-6 text-white" />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <User className="h-8 w-8 md:h-10 md:w-10 text-[#2952CC] flex-shrink-0" />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <Camera className="h-6 w-6 text-white" />
+                        </div>
+                      </>
                     )}
                   </div>
 
@@ -955,11 +666,11 @@ export default function EmployeeDashboard() {
                     <h2 className="text-2xl md:text-3xl font-semibold text-[#0B2A6F]">
                       Hi, {displayName} 👋
                     </h2>
-                    <p className="text-sm md:text-base text-gray-600 max-w-xl">
+                    {/* <p className="text-sm md:text-base text-gray-600 max-w-xl">
                       {availableLeave > 0
                         ? `You have ${availableLeave} leaves remaining this year (24 total).`
                         : "No leaves remaining this year."}
-                    </p>
+                    </p> */}
                   </div>
                 </div>
 
@@ -970,7 +681,9 @@ export default function EmployeeDashboard() {
                       {month}/{year} Attendance
                     </p>
                     <p className="mt-1 text-xl font-semibold text-[#0B2A6F]">
-                      {attendancePercent != null ? `${attendancePercent}%` : "--"}
+                      {attendancePercent != null
+                        ? `${attendancePercent}%`
+                        : "--"}
                     </p>
                     <p className="mt-1 text-[11px] text-[#1B7C4D] flex items-center gap-1">
                       {attendancePercent != null ? (
@@ -1040,285 +753,284 @@ export default function EmployeeDashboard() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs md:text-sm">
-              <button
-                onClick={handleLeaveClick}
-                disabled={availableLeave === 0}
-                className={`group rounded-xl border px-3 py-3 flex flex-col items-start gap-2 transition-all duration-200 ${
-                  availableLeave === 0
-                    ? "bg-gray-100 border-gray-300 cursor-not-allowed opacity-60"
-                    : "border-gray-200 bg-[#F9FBFF] hover:border-[#2952CC] hover:bg-[#EAF0FF] hover:shadow-md hover:-translate-y-0.5"
-                }`}
+            <button
+  onClick={handleLeaveClick}
+  disabled={availableLeave === 0}
+  className={`group rounded-xl border px-3 py-3 flex flex-col items-start gap-2 transition-all duration-200 ${
+    availableLeave === 0
+      ? "bg-gray-100 border-gray-300 cursor-not-allowed opacity-60"
+      : "border-gray-200 bg-[#F9FBFF] hover:border-[#2952CC] hover:bg-[#EAF0FF] hover:shadow-md hover:-translate-y-0.5"
+  }`}
+>
+  <div className="flex items-center gap-2">
+    <Calendar className="h-4 w-4 text-[#2952CC]" />
+    <span
+      className={`font-medium ${
+        availableLeave === 0 ? "text-gray-500" : "text-[#0B2A6F]"
+      }`}
+    >
+      Apply Leave
+    </span>
+  </div>
+
+  <p
+    className={`text-[11px] ${
+      availableLeave === 0
+        ? "text-gray-400"
+        : "text-gray-500 group-hover:text-gray-700"
+    }`}
+  >
+    {availableLeave > 0 ? "View status & apply" : "No leaves left"}
+  </p>
+</button>
+
+                      <button
+            onClick={handlePayslipsClick}
+            className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+          >
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-[#2952CC]" />
+              <span className="font-medium text-[#0B2A6F]">Payslips</span>
+            </div>
+            <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
+              Finance Hub
+            </p>
+          </button>
+
+          <button
+            onClick={handleAttendanceClick}
+            className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+          >
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-[#2952CC]" />
+              <span className="font-medium text-[#0B2A6F]">Attendance</span>
+            </div>
+            <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
+              Clock in/out & history
+            </p>
+          </button>
+
+          <button
+            onClick={handleProfileClick}
+            className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+          >
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-[#2952CC]" />
+              <span className="font-medium text-[#0B2A6F]">My Profile</span>
+            </div>
+            <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
+              Update personal details
+            </p>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    {/* SNAPSHOT + ACTIVITY */}
+    <section className="grid grid-cols-1 xl:grid-cols-[1.7fr,1.3fr] gap-6">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-[#0B2A6F]">
+            Work Snapshot
+          </h3>
+          <button className="flex items-center gap-1 text-[11px] text-[#2952CC] hover:text-[#1F3DA3]">
+            View reports <ArrowRightCircle className="h-3 w-3" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-gray-500">
+                Current project
+              </span>
+              <Briefcase className="h-4 w-4 text-[#2952CC]" />
+            </div>
+            <p className="text-sm font-semibold text-[#0B2A6F]">
+              {snapshot.currentProject || "No project assigned"}
+            </p>
+            <div className="mt-2 h-1.5 w-full rounded-full bg-[#E5EDFF] overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-[#2952CC] to-[#2DAF7D]"
+                style={{
+                  width: `${snapshot.projectProgressPercent || 0}%`,
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-gray-500">This month</span>
+              <Clock className="h-4 w-4 text-[#2952CC]" />
+            </div>
+            <p className="text-sm font-semibold text-[#0B2A6F]">
+              Logged Hours
+            </p>
+            <p className="text-2xl font-semibold text-[#0B2A6F]">
+              {snapshot.loggedHours || "--"}
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-gray-500">Pending</span>
+              <CheckCircle className="h-4 w-4 text-[#2952CC]" />
+            </div>
+            <p className="text-sm font-semibold text-[#0B2A6F]">HR Items</p>
+            {snapshot.pendingItems.length > 0 ? (
+              <ul className="mt-1 space-y-1 text-[11px] text-gray-700">
+                {snapshot.pendingItems.slice(0, 3).map((item, idx) => (
+                  <li key={idx}>• {item}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1 text-[11px] text-gray-500">
+                All caught up!
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
+          <h3 className="text-sm font-semibold text-[#0B2A6F] mb-3">
+            Recent Activity
+          </h3>
+          {myLeaves.length > 0 ? (
+            myLeaves.slice(-3).map((leave) => (
+              <div
+                key={leave.id}
+                className="flex gap-3 items-start py-2 border-b border-gray-100 last:border-b-0"
               >
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-[#2952CC]" />
+                <div
+                  className={`px-2 py-1 rounded-full text-[10px] font-medium ${getActivityPillClasses(
+                    { status: leave.status }
+                  )}`}
+                >
+                  {formatTime(leave.startDate)}
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-[#0B2A6F]">
+                    {leave.type || "Leave Request"}
+                  </p>
+                  <p className="text-[11px] text-gray-500">
+                    {leave.startDate && leave.endDate
+                      ? `${formatShortDate(
+                          leave.startDate
+                        )} - ${formatShortDate(leave.endDate)}`
+                      : "Leave application"}
+                  </p>
                   <span
-                    className={`font-medium ${
-                      availableLeave === 0
-                        ? "text-gray-500"
-                        : "text-[#0B2A6F]"
-                    }`}
+                    className={`text-[10px] px-2 py-1 rounded-full ${getEventBadgeClasses(
+                      leave
+                    )}`}
                   >
-                    Apply Leave
+                    {leave.status || "Pending"}
                   </span>
                 </div>
-                <p
-                  className={`text-[11px] ${
-                    availableLeave === 0
-                      ? "text-gray-400"
-                      : "text-gray-500 group-hover:text-gray-700"
-                  }`}
-                >
-                  {availableLeave > 0
-                    ? "View status & apply"
-                    : "No leaves left"}
-                </p>
-              </button>
-
-              <button
-                onClick={handlePayslipsClick}
-                className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
-              >
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-[#2952CC]" />
-                  <span className="font-medium text-[#0B2A6F]">Payslips</span>
-                </div>
-                <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
-                  Finance Hub
-                </p>
-              </button>
-
-              <button
-                onClick={handleAttendanceClick}
-                className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
-              >
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-[#2952CC]" />
-                  <span className="font-medium text-[#0B2A6F]">Attendance</span>
-                </div>
-                <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
-                  Clock in/out & history
-                </p>
-              </button>
-
-              <button
-                onClick={handleProfileClick}
-                className="group rounded-xl border border-gray-200 bg-[#F9FBFF] px-3 py-3 flex flex-col items-start gap-2 hover:border-[#2952CC] hover:bg-[#EAF0FF] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
-              >
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-[#2952CC]" />
-                  <span className="font-medium text-[#0B2A6F]">My Profile</span>
-                </div>
-                <p className="text-[11px] text-gray-500 group-hover:text-gray-700">
-                  Update personal details
-                </p>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* SNAPSHOT + ACTIVITY */}
-        <section className="grid grid-cols-1 xl:grid-cols-[1.7fr,1.3fr] gap-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-[#0B2A6F]">
-                Work Snapshot
-              </h3>
-              <button className="flex items-center gap-1 text-[11px] text-[#2952CC] hover:text-[#1F3DA3]">
-                View reports <ArrowRightCircle className="h-3 w-3" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-gray-500">Current project</span>
-                  <Briefcase className="h-4 w-4 text-[#2952CC]" />
-                </div>
-                <p className="text-sm font-semibold text-[#0B2A6F]">
-                  {snapshot.currentProject || "No project assigned"}
-                </p>
-                <div className="mt-2 h-1.5 w-full rounded-full bg-[#E5EDFF] overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#2952CC] to-[#2DAF7D]"
-                    style={{
-                      width: `${snapshot.projectProgressPercent || 0}%`,
-                    }}
-                  />
-                </div>
               </div>
+            ))
+          ) : (
+            <p className="text-xs text-gray-500">No recent activity</p>
+          )}
+        </div>
+      </div>
 
-              <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-gray-500">This month</span>
-                  <Clock className="h-4 w-4 text-[#2952CC]" />
-                </div>
-                <p className="text-sm font-semibold text-[#0B2A6F]">
-                  Logged Hours
-                </p>
-                <p className="text-2xl font-semibold text-[#0B2A6F]">
-                  {snapshot.loggedHours || "--"}
-                </p>
-              </div>
-
-              <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-gray-500">Pending</span>
-                  <CheckCircle className="h-4 w-4 text-[#2952CC]" />
-                </div>
-                <p className="text-sm font-semibold text-[#0B2A6F]">HR Items</p>
-                {snapshot.pendingItems.length > 0 ? (
-                  <ul className="mt-1 space-y-1 text-[11px] text-gray-700">
-                    {snapshot.pendingItems.slice(0, 3).map((item, idx) => (
-                      <li key={idx}>• {item}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-1 text-[11px] text-gray-500">
-                    All caught up!
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
-              <h3 className="text-sm font-semibold text-[#0B2A6F] mb-3">
-                Recent Activity
-              </h3>
-              {myLeaves.length > 0 ? (
-                myLeaves.slice(-3).map((leave) => (
-                  <div
-                    key={leave.id}
-                    className="flex gap-3 items-start py-2 border-b border-gray-100 last:border-b-0"
-                  >
-                    <div
-                      className={`px-2 py-1 rounded-full text-[10px] font-medium ${getActivityPillClasses(
-                        { status: leave.status }
-                      )}`}
-                    >
-                      {formatTime(leave.startDate)}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-[#0B2A6F]">
-                        {leave.type || "Leave Request"}
-                      </p>
-                      <p className="text-[11px] text-gray-500">
-                        {leave.startDate && leave.endDate
-                          ? `${formatShortDate(
-                              leave.startDate
-                            )} - ${formatShortDate(leave.endDate)}`
-                          : "Leave application"}
-                      </p>
-                      <span
-                        className={`text-[10px] px-2 py-1 rounded-full ${getEventBadgeClasses(
-                          leave
-                        )}`}
-                      >
-                        {leave.status || "Pending"}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-gray-500">No recent activity</p>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
-              <h3 className="text-sm font-semibold text-[#0B2A6F] mb-2">
-                Upcoming Leaves
-              </h3>
-              <p className="text-xs text-gray-500 mb-4">Next 30 days</p>
-              {myLeaves
-                .filter(
-                  (leave) =>
-                    new Date(leave.startDate) > new Date() &&
-                    ["APPROVED", "PENDING"].includes(
-                      (leave.status || "").toUpperCase()
-                    )
+      <div className="space-y-4">
+        <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
+          <h3 className="text-sm font-semibold text-[#0B2A6F] mb-2">
+            Upcoming Leaves
+          </h3>
+          <p className="text-xs text-gray-500 mb-4">Next 30 days</p>
+          {myLeaves
+            .filter(
+              (leave) =>
+                new Date(leave.startDate) > new Date() &&
+                ["APPROVED", "PENDING"].includes(
+                  (leave.status || "").toUpperCase()
                 )
-                .slice(0, 3).length > 0 ? (
-                myLeaves
-                  .filter(
-                    (leave) =>
-                      new Date(leave.startDate) > new Date() &&
-                      ["APPROVED", "PENDING"].includes(
-                        (leave.status || "").toUpperCase()
-                      )
+            )
+            .slice(0, 3).length > 0 ? (
+            myLeaves
+              .filter(
+                (leave) =>
+                  new Date(leave.startDate) > new Date() &&
+                  ["APPROVED", "PENDING"].includes(
+                    (leave.status || "").toUpperCase()
                   )
-                  .slice(0, 3)
-                  .map((leave) => (
-                    <div
-                      key={leave.id}
-                      className="flex items-start gap-3 p-3 rounded-xl border bg-[#F9FBFF] mb-3"
-                    >
-                      <div className="bg-[#E3EBFF] text-[#0B2A6F] h-10 w-10 rounded-lg flex flex-col items-center justify-center text-[11px]">
-                        <span>
-                          {formatShortDate(leave.startDate)?.slice(0, 2)}
-                        </span>
-                        <span className="text-[9px] uppercase">
-                          {formatShortDate(leave.startDate)?.slice(3)}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-[#0B2A6F]">
-                          {leave.type || "Leave"}
-                        </p>
-                        <p className="text-[11px] text-gray-500">
-                          {leave.reason || "Approved leave"}
-                        </p>
-                      </div>
-                      <span
-                        className={`text-[11px] font-medium ${getEventBadgeClasses(
-                          leave
-                        )}`}
-                      >
-                        {leave.status}
-                      </span>
-                    </div>
-                  ))
-              ) : (
-                <p className="text-xs text-gray-500">No upcoming leaves</p>
-              )}
-            </div>
-
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
-              <h3 className="text-sm font-semibold text-[#0B2A6F] mb-3">
-                Wellness
-              </h3>
-              {wellnessHighlights.length === 0 ? (
-                <p className="text-xs text-gray-500">No updates available</p>
-              ) : (
-                wellnessHighlights.slice(0, 3).map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-3 p-3 rounded-xl border bg-[#F9FBFF] mb-3"
-                  >
-                    <div className="h-9 w-9 rounded-xl bg-[#E3EBFF] flex items-center justify-center">
-                      <HeartPulse className="h-4 w-4 text-[#2952CC]" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-[#0B2A6F]">{item.title}</p>
-                      <p className="text-[11px] text-gray-500">
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              )}
-              <div className="pt-2">
-                <button
-                  onClick={handleProfileClick}
-                  className="text-[11px] text-[#2952CC] hover:text-[#1F3DA3] flex items-center gap-1"
+              )
+              .slice(0, 3)
+              .map((leave) => (
+                <div
+                  key={leave.id}
+                  className="flex items-start gap-3 p-3 rounded-xl border bg-[#F9FBFF] mb-3"
                 >
-                  Update profile <ArrowRightCircle className="h-3 w-3" />
-                </button>
+                  <div className="bg-[#E3EBFF] text-[#0B2A6F] h-10 w-10 rounded-lg flex flex-col items-center justify-center text-[11px]">
+                    <span>
+                      {formatShortDate(leave.startDate)?.slice(0, 2)}
+                    </span>
+                    <span className="text-[9px] uppercase">
+                      {formatShortDate(leave.startDate)?.slice(3)}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-[#0B2A6F]">
+                      {leave.type || "Leave"}
+                    </p>
+                    <p className="text-[11px] text-gray-500">
+                      {leave.reason || "Approved leave"}
+                    </p>
+                  </div>
+                  <span
+                    className={`text-[11px] font-medium ${getEventBadgeClasses(
+                      leave
+                    )}`}
+                  >
+                    {leave.status}
+                  </span>
+                </div>
+              ))
+          ) : (
+            <p className="text-xs text-gray-500">No upcoming leaves</p>
+          )}
+        </div>
+
+        <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 md:p-5">
+          <h3 className="text-sm font-semibold text-[#0B2A6F] mb-3">
+            Wellness
+          </h3>
+          {wellnessHighlights.length === 0 ? (
+            <p className="text-xs text-gray-500">No updates available</p>
+          ) : (
+            wellnessHighlights.slice(0, 3).map((item, idx) => (
+              <div
+                key={idx}
+                className="flex items-start gap-3 p-3 rounded-xl border bg-[#F9FBFF] mb-3"
+              >
+                <div className="h-9 w-9 rounded-xl bg-[#E3EBFF] flex items-center justify-center">
+                  <HeartPulse className="h-4 w-4 text-[#2952CC]" />
+                </div>
+                <div>
+                  <p className="font-medium text-[#0B2A6F]">{item.title}</p>
+                  <p className="text-[11px] text-gray-500">
+                    {item.description}
+                  </p>
+                </div>
               </div>
-            </div>
+            ))
+          )}
+          <div className="pt-2">
+            <button
+              onClick={handleProfileClick}
+              className="text-[11px] text-[#2952CC] hover:text-[#1F3DA3] flex items-center gap-1"
+            >
+              Update profile <ArrowRightCircle className="h-3 w-3" />
+            </button>
           </div>
-        </section>
-      </main>
-    </div>
-  );
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+);
 }

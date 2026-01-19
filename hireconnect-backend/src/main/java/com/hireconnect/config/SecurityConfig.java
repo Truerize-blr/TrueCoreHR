@@ -1,7 +1,6 @@
 package com.hireconnect.config;
 
 import java.util.Arrays;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,73 +22,62 @@ import com.hireconnect.security.JwtAuthenticationFilter;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
+    
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
-
+    
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
-            // ❌ CSRF breaks JWT + multipart upload
             .csrf(csrf -> csrf.disable())
-
-            // ✅ CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-            // ✅ JWT = Stateless
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-
-            // ✅ Authorization rules
             .authorizeHttpRequests(auth -> auth
-//                .requestMatchers("/api/auth/**").permitAll()
-//                .requestMatchers("/error").permitAll()
-//                .requestMatchers("/api/documents/**").authenticated()
-//                .requestMatchers("/api/dashboard/**").authenticated()
-//                .requestMatchers("/api/attendance/**").authenticated()
-//                .requestMatchers("/api/admin/**").authenticated()
+                // Public endpoints - NO AUTHENTICATION REQUIRED
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/error").permitAll()
+                .requestMatchers("/uploads/**").permitAll() // Access uploaded files
+                .requestMatchers("/api/users/*/upload-photo").permitAll() // Upload photo
+                .requestMatchers("/api/users/me/upload-photo").permitAll() // Upload photo
+                .requestMatchers("/api/users/*/photo").permitAll() // Get/Delete photo
+                .requestMatchers("/api/users/me/photo").permitAll() // Get/Delete photo
+                
+                // All other endpoints
                 .anyRequest().permitAll()
             )
-
-            // ✅ VERY IMPORTANT → JWT filter
             .addFilterBefore(
                 jwtAuthenticationFilter,
                 UsernamePasswordAuthenticationFilter.class
             );
-
+        
         return http.build();
     }
-
-
+    
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
         configuration.setAllowedOrigins(
-            Arrays.asList("http://localhost:3000")
+            Arrays.asList("http://localhost:3000", "http://localhost:5173")
         );
         configuration.setAllowedMethods(
             Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
         );
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source =
-            new UrlBasedCorsConfigurationSource();
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-
         return source;
     }
-
-
+    
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-
+    
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {

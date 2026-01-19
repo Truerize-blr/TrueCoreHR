@@ -44,11 +44,10 @@ public class AttendanceService {
     @Autowired
     private LeaveRepository leaveRepository;
     
-    // ✅ UPDATED CONSTANTS for REAL-WORLD LOGIC
-    private static final int MAX_WORK_SECONDS = 9 * 60 * 60;           // 9 hours max
-    private static final int HALF_DAY_THRESHOLD_SECONDS = 4 * 60 * 60; // <4h = half day
-    private static final int HALF_DAY_CREDIT_SECONDS = 5 * 60 * 60;    // Credit 5h for half day
-    private static final int FULL_DAY_CREDIT_SECONDS = 8 * 60 * 60;    // Credit 8h for full day
+    private static final int MAX_WORK_SECONDS = 9 * 60 * 60;
+    private static final int HALF_DAY_THRESHOLD_SECONDS = 4 * 60 * 60;
+    private static final int HALF_DAY_CREDIT_SECONDS = 5 * 60 * 60;
+    private static final int FULL_DAY_CREDIT_SECONDS = 8 * 60 * 60;
 
     @Transactional
     public AttendanceSession startWork(Long employeeId) {
@@ -92,6 +91,7 @@ public class AttendanceService {
             throw new RuntimeException("Cannot start break after work has ended");
         }
         
+        // ✅ FIX: Check before starting break
         checkAndAutoSubmitIfExceeded(session);
         
         Break breakEntry = new Break();
@@ -118,6 +118,8 @@ public class AttendanceService {
         
         session.setStatus(AttendanceSession.AttendanceStatus.WORKING);
         attendanceSessionRepository.save(session);
+        
+        // ✅ FIX: Check after resuming work
         checkAndAutoSubmitIfExceeded(session);
     }
 
@@ -125,7 +127,6 @@ public class AttendanceService {
     public AttendanceSession endWork(Long employeeId) {
         AttendanceSession session = getActiveTodaySession(employeeId);
 
-        // End active break if any
         Optional<Break> activeBreak = breakRepository.findActiveBreakBySessionId(session.getId());
         if (activeBreak.isPresent()) {
             Break breakEntry = activeBreak.get();
@@ -140,22 +141,15 @@ public class AttendanceService {
         LocalDateTime now = LocalDateTime.now();
         session.setEndTime(now);
 
-        // Total elapsed time
         int totalElapsedSeconds = (int) ChronoUnit.SECONDS.between(session.getStartTime(), now);
         session.setTotalSeconds(totalElapsedSeconds);
 
-        // ✅ REAL worked time (excluding breaks)
         int netWorkSeconds = calculateNetWorkSeconds(session);
-
-        // ✅ Credit-based calculation for internal hours
         int creditSeconds = calculateInternalWorkHours(netWorkSeconds);
 
-        // 🔥 FIX: ALWAYS STORE THE CREDITED HOURS IN DATABASE
         session.setInternalWorkSeconds(creditSeconds);
 
-        // Status determination based on credited hours
         if (creditSeconds >= FULL_DAY_CREDIT_SECONDS) {
-            // ✅ Use PRESENT status (or COMPLETED based on your enum)
             session.setStatus(AttendanceSession.AttendanceStatus.PRESENT);
         } else if (creditSeconds >= HALF_DAY_CREDIT_SECONDS) {
             session.setStatus(AttendanceSession.AttendanceStatus.HALF_DAY);
@@ -165,7 +159,6 @@ public class AttendanceService {
 
         AttendanceSession savedSession = attendanceSessionRepository.save(session);
 
-        // Auto-submit timesheet if exceeded max hours
         if (netWorkSeconds >= MAX_WORK_SECONDS) {
             autoSubmitTimesheet(
                 savedSession,
@@ -178,11 +171,11 @@ public class AttendanceService {
 
     private int calculateInternalWorkHours(int netWorkSeconds) {
         if (netWorkSeconds < HALF_DAY_THRESHOLD_SECONDS) {
-            return HALF_DAY_CREDIT_SECONDS; // <4h = 5h credited
+            return HALF_DAY_CREDIT_SECONDS;
         } else if (netWorkSeconds >= HALF_DAY_THRESHOLD_SECONDS && netWorkSeconds <= MAX_WORK_SECONDS) {
-            return FULL_DAY_CREDIT_SECONDS; // 4-9h = 8h credited
+            return FULL_DAY_CREDIT_SECONDS;
         }
-        return MAX_WORK_SECONDS; // Cap at 9h
+        return MAX_WORK_SECONDS;
     }
 
     @Transactional
@@ -199,13 +192,14 @@ public class AttendanceService {
             session.setEndTime(now);
             session.setTotalSeconds((int) ChronoUnit.SECONDS.between(session.getStartTime(), now));
             
-            // ✅ Apply internal hours calculation before auto-submit
             int internalWorkSeconds = calculateInternalWorkHours(totalWorkSeconds);
             session.setInternalWorkSeconds(internalWorkSeconds);
             session.setStatus(AttendanceSession.AttendanceStatus.PRESENT);
             
             attendanceSessionRepository.save(session);
             autoSubmitTimesheet(session, "Auto-submitted: Work duration exceeded 9 hours");
+            
+            // ✅ FIX: Throw exception to notify frontend
             throw new RuntimeException("Work session automatically ended after 9 hours. Timesheet submitted.");
         }
     }
@@ -262,12 +256,10 @@ public class AttendanceService {
 
     @Transactional
     public void saveTimesheet(TimesheetRequest request) {
-        // ✅ FIX: Handle both sessionId and employeeId based requests
         Long sessionId = request.getSessionId();
         Long employeeId = request.getEmployeeId();
         
         if (sessionId == null && employeeId != null) {
-            // Find today's session for the employee
             LocalDate today = LocalDate.now();
             List<AttendanceSession> sessions = attendanceSessionRepository
                 .findByEmployeeIdAndDate(employeeId, today);
@@ -314,10 +306,9 @@ public class AttendanceService {
         response.setStartTime(session.getStartTime());
         response.setEndTime(session.getEndTime());
         
-        // ✅ Map status correctly
         String statusString = session.getStatus().name().toLowerCase();
         if (statusString.equals("present")) {
-            statusString = "completed"; // Frontend expects "completed" for finished work
+            statusString = "completed";
         }
         response.setStatus(statusString);
         
@@ -344,7 +335,6 @@ public class AttendanceService {
         int netWorkSeconds = totalSeconds - totalBreakSeconds;
         response.setNetWorkSeconds(netWorkSeconds);
         
-        // ✅ Display shift times
         if (session.getStartTime() != null) {
             response.setShiftStartTime(session.getStartTime().toLocalTime().toString());
         }
@@ -396,7 +386,6 @@ public class AttendanceService {
                 !currentDate.isAfter(leave.getEndDate())
             );
 
-            // ✅ LEAVE HAS HIGHEST PRIORITY
             if (isOnLeave) {
                 applyCalendarColors(dayData, "LEAVE");
                 days.add(dayData);
@@ -406,7 +395,6 @@ public class AttendanceService {
             AttendanceSession session = sessionByDate.get(currentDate);
 
             if (session != null) {
-                // ✅ Use internalWorkSeconds if available, otherwise calculate
                 int internalSeconds = session.getInternalWorkSeconds() != null 
                     ? session.getInternalWorkSeconds() 
                     : 0;
@@ -419,7 +407,6 @@ public class AttendanceService {
 
                 AttendanceSession.AttendanceStatus rawStatus = session.getStatus();
 
-                // ✅ PRIORITY ORDER: COMP_OFF > WORKING/BREAK > HOURS-BASED STATUS
                 if (rawStatus == AttendanceSession.AttendanceStatus.COMPENSATION_OFF) {
                     applyCalendarColors(dayData, "COMPENSATION_OFF");
                 }
@@ -429,16 +416,13 @@ public class AttendanceService {
                 else if (rawStatus == AttendanceSession.AttendanceStatus.ON_BREAK) {
                     applyCalendarColors(dayData, "ON_BREAK");
                 }
-                // ✅ COMPLETED/PRESENT = FULL DAY
                 else if (rawStatus == AttendanceSession.AttendanceStatus.COMPLETED ||
                          rawStatus == AttendanceSession.AttendanceStatus.PRESENT) {
                     applyCalendarColors(dayData, "FULL");
                 }
-                // ✅ HALF_DAY status
                 else if (rawStatus == AttendanceSession.AttendanceStatus.HALF_DAY) {
                     applyCalendarColors(dayData, "HALF");
                 }
-                // ✅ HOURS-BASED FALLBACK
                 else if (hours >= 8) {
                     applyCalendarColors(dayData, "FULL");
                 }
@@ -452,13 +436,11 @@ public class AttendanceService {
                     applyCalendarColors(dayData, "ABSENT");
                 }
 
-                // ✅ WEEKEND WORK OVERRIDE
                 if (isWeekend && hours > 0) {
                     applyCalendarColors(dayData, "HOLIDAY_WORK");
                 }
             }
             else {
-                // No attendance record
                 if (isWeekend) {
                     applyCalendarColors(dayData, "HOLIDAY");
                 }
@@ -526,7 +508,7 @@ public class AttendanceService {
         map.put("textColor", text);
     }
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 * * * * *") // ✅ FIX: Run every minute instead of every hour
     @Transactional
     public void autoSubmitExceededSessions() {
         List<AttendanceSession> activeSessions = attendanceSessionRepository
@@ -656,7 +638,6 @@ public class AttendanceService {
         
         AttendanceSession session;
         if (sessions.isEmpty()) {
-            // Create new session for correction
             session = new AttendanceSession();
             session.setEmployeeId(request.getEmployeeId());
             session.setStartTime(requestDate.atStartOfDay());

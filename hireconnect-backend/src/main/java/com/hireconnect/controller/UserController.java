@@ -16,25 +16,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.hireconnect.dto.response.ApiResponse;
 import com.hireconnect.entity.User;
 import com.hireconnect.service.UserService;
 
-import lombok.RequiredArgsConstructor;
-
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
 public class UserController {
-	
-    @Autowired
-    private  UserService userService;
     
-   
+    @Autowired
+    private UserService userService;
     
     @GetMapping
-//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<User>>> getAllUsers() {
         try {
             List<User> users = userService.getAllUsers();
@@ -85,6 +81,81 @@ public class UserController {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
+    
+    // ========== SIMPLIFIED IMAGE UPLOAD ENDPOINTS (NO AUTH) ==========
+    
+    /**
+     * Upload profile photo for any user by userId (NO AUTHENTICATION REQUIRED)
+     */
+    @PostMapping("/{userId}/upload-photo")
+    public ResponseEntity<ApiResponse<Map<String, String>>> uploadUserPhotoSimple(
+            @PathVariable Long userId,
+            @RequestParam("photo") MultipartFile file) {
+        try {
+            String photoUrl = userService.uploadUserPhotoSimple(userId, file);
+            Map<String, String> response = Map.of(
+                "photoUrl", photoUrl,
+                "message", "Profile photo uploaded successfully"
+            );
+            return ResponseEntity.ok(ApiResponse.success("Photo uploaded", response));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+    /**
+     * Upload photo using userId from request param (NO AUTHENTICATION REQUIRED)
+     */
+    @PostMapping("/me/upload-photo")
+    public ResponseEntity<ApiResponse<Map<String, String>>> uploadPhotoWithUserId(
+            @RequestParam("photo") MultipartFile file,
+            @RequestParam(value = "userId", required = false) Long userId) {
+        try {
+            // If userId not provided, try to get from localStorage on frontend
+            if (userId == null) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("userId is required"));
+            }
+            
+            String photoUrl = userService.uploadUserPhotoSimple(userId, file);
+            Map<String, String> response = Map.of(
+                "photoUrl", photoUrl,
+                "message", "Profile photo uploaded successfully"
+            );
+            return ResponseEntity.ok(ApiResponse.success("Photo uploaded", response));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+    /**
+     * Get user's profile photo URL (NO AUTHENTICATION REQUIRED)
+     */
+    @GetMapping("/{userId}/photo")
+    public ResponseEntity<ApiResponse<Map<String, String>>> getUserPhoto(@PathVariable Long userId) {
+        try {
+            String photoUrl = userService.getUserPhotoUrl(userId);
+            Map<String, String> response = Map.of("photoUrl", photoUrl != null ? photoUrl : "");
+            return ResponseEntity.ok(ApiResponse.success("Photo URL fetched", response));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+    /**
+     * Delete user's profile photo (NO AUTHENTICATION REQUIRED)
+     */
+    @DeleteMapping("/{userId}/photo")
+    public ResponseEntity<ApiResponse<String>> deleteUserPhotoSimple(@PathVariable Long userId) {
+        try {
+            userService.deleteUserPhotoSimple(userId);
+            return ResponseEntity.ok(ApiResponse.success("Profile photo deleted", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+    // ========== EXISTING ENDPOINTS ==========
     
     @PostMapping("/change-password")
     public ResponseEntity<ApiResponse<String>> changePassword(@RequestBody Map<String, String> request) {

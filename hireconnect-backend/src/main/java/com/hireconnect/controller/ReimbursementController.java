@@ -5,6 +5,8 @@ import com.hireconnect.entity.Reimbursement;
 import com.hireconnect.service.FinanceService;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +16,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reimbursements")
-@RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class ReimbursementController {
     
+	@Autowired
     private  FinanceService financeService;
     
     @GetMapping
